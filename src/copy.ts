@@ -1,9 +1,4 @@
 /**
- * 数据拷贝（深拷贝 / 浅拷贝）工具。
- * @packageDocumentation
- */
-
-/**
  * 递归深拷贝：支持 `Date` / `RegExp` / `Map` / `Set` 以及循环引用。
  * @template T - 被拷贝值的类型
  * @param obj - 待深拷贝的源对象/值
@@ -21,7 +16,7 @@ export function deepClone<T>(obj: T, hash = new WeakMap<any, any>()): T {
   if (obj instanceof Map) {
     const clone = new Map()
     hash.set(obj, clone)
-    obj.forEach((value, key) => clone.set(key, deepClone(value, hash)))
+    obj.forEach((value, key) => clone.set(deepClone(key, hash), deepClone(value, hash)))
     return clone as any
   }
 

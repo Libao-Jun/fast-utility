@@ -1,9 +1,4 @@
 /**
- * 类型判断与比较工具集合。
- * @packageDocumentation
- */
-
-/**
  * 判断是否为数组（`Array.isArray` 的类型守卫版本）。
  * @param value - 任意值
  * @returns 类型谓词：为 `true` 时 `value` 被收窄为 `any[]`
@@ -11,12 +6,15 @@
 export const isArray = Array.isArray as (value: any) => value is any[]
 
 /**
- * 判断是否为普通对象（不含数组、不含 `null`）。
+ * 判断是否为普通对象（原型为 `Object.prototype` 或 `null`）。
  * @param value - 任意值
  * @returns 是普通对象返回 `true`
+ * @remarks 数组、`Date`、`Map`、`Set`、类实例等均返回 `false`。
  */
 export const isObject = (value: any): boolean => {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
+  if (value === null || typeof value !== "object") return false;
+  const proto = Object.getPrototypeOf(value);
+  return proto === Object.prototype || proto === null;
 };
 
 /**
@@ -53,7 +51,7 @@ export const isDate = (val: any): val is Date => {
  * @returns 类型谓词：为 `true` 时 `value` 被收窄为 `number`
  */
 export const isNumber = (val: any): val is number => {
-  return Number(val) === val;
+  return typeof val === "number" && !Number.isNaN(val);
 };
 
 /**
@@ -131,7 +129,7 @@ export const isWindow = (val: any): val is Window => {
  * @returns 类型谓词：为 `true` 时 `value` 被收窄为 `Element`
  */
 export const isElement = (val: unknown): val is Element => {
-  return isObject(val) && !!(val as Element).tagName;
+  return typeof val === "object" && val !== null && typeof (val as Element).tagName === "string";
 };
 
 /**
@@ -154,7 +152,8 @@ export const isHexColor = (str: string): boolean => {
  * 判断当前设备是否为 iOS（iPhone / iPad / iPod）。
  * @returns 是 iOS 设备返回 `true`
  */
-export const isIOS = (): boolean => /iPad|iPhone|iPod/.test(navigator.userAgent);
+export const isIOS = (): boolean =>
+  typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
 /**
  * 判断是否为合法的邮箱地址（宽松校验：允许 `+`、点号等常见字符，仅要求含 `@` 与带点的域名）。
@@ -262,29 +261,90 @@ export function isEmptySv(value: string | object | null | undefined): boolean {
 }
 
 /**
- * 深度相等比较：支持 `Date` / `RegExp` 及嵌套对象的递归比较。
+ * 深度相等比较：支持 `Date` / `RegExp` / `Map` / `Set` / `ArrayBuffer` 视图、嵌套对象与循环引用。
  * @template T - 比较值的类型
  * @param x - 第一个值
  * @param y - 第二个值
  * @returns 完全相等返回 `true`
+ * @remarks `Map` 的键与 `Set` 的元素按引用（SameValueZero）比较，不递归比较其内部对象。
  */
-export const isEqual = <T>(x: T, y: T): boolean => {
+const _isEqual = (x: any, y: any, seen: WeakMap<object, object>): boolean => {
   if (Object.is(x, y)) return true;
-  if (x instanceof Date && y instanceof Date) {
-    return x.getTime() === y.getTime();
+  if (x instanceof Date && y instanceof Date) return x.getTime() === y.getTime();
+  if (x instanceof RegExp && y instanceof RegExp) return x.toString() === y.toString();
+  if (typeof x !== "object" || x === null || typeof y !== "object" || y === null) return false;
+  if (Object.getPrototypeOf(x) !== Object.getPrototypeOf(y)) return false;
+
+  const mapped = seen.get(x);
+  if (mapped) return mapped === y;
+  seen.set(x, y);
+
+  if (x instanceof Map && y instanceof Map) {
+    if (x.size !== y.size) return false;
+    for (const [key, value] of x) {
+      if (!y.has(key)) return false;
+      if (!_isEqual(value, y.get(key), seen)) return false;
+    }
+    return true;
   }
-  if (x instanceof RegExp && y instanceof RegExp) {
-    return x.toString() === y.toString();
+
+  if (x instanceof Set && y instanceof Set) {
+    if (x.size !== y.size) return false;
+    for (const value of x) {
+      if (!y.has(value)) return false;
+    }
+    return true;
   }
-  if (typeof x !== "object" || x === null || typeof y !== "object" || y === null) {
-    return false;
+
+  if (ArrayBuffer.isView(x) && ArrayBuffer.isView(y)) {
+    if (x.byteLength !== y.byteLength) return false;
+    const left = new Uint8Array(x.buffer, x.byteOffset, x.byteLength);
+    const right = new Uint8Array(y.buffer, y.byteOffset, y.byteLength);
+    for (let i = 0; i < left.length; i++) {
+      if (left[i] !== right[i]) return false;
+    }
+    return true;
   }
-  const keysX = Reflect.ownKeys(x as unknown as object) as (keyof typeof x)[];
-  const keysY = Reflect.ownKeys(y as unknown as object);
+
+  const keysX = Reflect.ownKeys(x);
+  const keysY = Reflect.ownKeys(y);
   if (keysX.length !== keysY.length) return false;
-  for (let i = 0; i < keysX.length; i++) {
-    if (!Reflect.has(y as unknown as object, keysX[i])) return false;
-    if (!isEqual(x[keysX[i]], y[keysX[i]])) return false;
+  for (const key of keysX) {
+    if (!Object.prototype.hasOwnProperty.call(y, key)) return false;
+    if (!_isEqual(x[key], y[key], seen)) return false;
   }
   return true;
 };
+
+export const isEqual = <T>(x: T, y: T): boolean => _isEqual(x, y, new WeakMap());
+
+/**
+ * 判断值是否为 `null` 或 `undefined`。
+ * @param val - 任意值
+ * @returns 类型谓词：为 `true` 时 `value` 被收窄为 `null | undefined`
+ */
+export const isNil = (val: unknown): val is null | undefined =>
+  val === null || val === undefined;
+
+/**
+ * 判断是否为 `Error` 实例（含跨执行域的 `Error`）。
+ * @param val - 任意值
+ * @returns 类型谓词：为 `true` 时 `value` 被收窄为 `Error`
+ */
+export const isError = (val: unknown): val is Error =>
+  val instanceof Error || is(val, "Error");
+
+/**
+ * 判断是否为 `RegExp` 对象。
+ * @param val - 任意值
+ * @returns 类型谓词：为 `true` 时 `value` 被收窄为 `RegExp`
+ */
+export const isRegExp = (val: unknown): val is RegExp => is(val, "RegExp");
+
+/**
+ * 判断是否为 TypedArray（`Uint8Array`、`Float64Array` 等，不含 `DataView`）。
+ * @param val - 任意值
+ * @returns 是 TypedArray 返回 `true`
+ */
+export const isTypedArray = (val: unknown): boolean =>
+  ArrayBuffer.isView(val) && !(val instanceof DataView);

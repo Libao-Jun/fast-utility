@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { clamp, randomInt, randomFloat, round, sum, average, inRange, lerp } from '../src/math'
+import { clamp, randomInt, randomFloat, round, sum, average, inRange, lerp, toInt, toFloat } from '../src/math'
 
 // ============================================================
 // clamp
@@ -271,5 +271,59 @@ describe('lerp', () => {
 
   it('start 等于 end', () => {
     expect(lerp(5, 5, 0.7)).toBe(5)
+  })
+})
+
+// ============================================================
+// round precision
+// ============================================================
+describe('round precision', () => {
+  it('处理浮点误差', () => {
+    expect(round(1.005, 2)).toBe(1.01)
+  })
+
+  it('处理科学计数法输入', () => {
+    expect(round(1e-7, 8)).toBe(1e-7)
+  })
+
+  it('非有限值原样返回', () => {
+    expect(round(Number.POSITIVE_INFINITY, 2)).toBe(Number.POSITIVE_INFINITY)
+  })
+})
+
+// ============================================================
+// toInt
+// ============================================================
+describe('toInt', () => {
+  it('解析整数', () => {
+    expect(toInt('42')).toBe(42)
+    expect(toInt(42)).toBe(42)
+  })
+
+  it('截断小数部分', () => {
+    expect(toInt('42.9')).toBe(42)
+  })
+
+  it('支持进制参数', () => {
+    expect(toInt('ff', 16)).toBe(255)
+  })
+
+  it('无法解析时返回 0', () => {
+    expect(toInt('abc')).toBe(0)
+    expect(toInt(null)).toBe(0)
+    expect(toInt(Symbol('x'))).toBe(0)
+  })
+})
+
+// ============================================================
+// toFloat
+// ============================================================
+describe('toFloat', () => {
+  it('解析浮点数并忽略尾部字符', () => {
+    expect(toFloat('3.14px')).toBe(3.14)
+  })
+
+  it('无法解析时返回 0', () => {
+    expect(toFloat('abc')).toBe(0)
   })
 })

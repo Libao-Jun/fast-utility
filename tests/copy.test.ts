@@ -418,3 +418,18 @@ describe('shallowClone', () => {
     expect(cloned.d).toBe(obj.d) // same array reference
   })
 })
+
+// ============================================================
+// deepClone: Map keys
+// ============================================================
+describe('deepClone map keys', () => {
+  it('对象键也会被深拷贝', () => {
+    const key = { id: 1 }
+    const source = new Map([[key, { value: 2 }]])
+    const cloned = deepClone(source)
+    const clonedKey = [...cloned.keys()][0]
+    expect(clonedKey).not.toBe(key)
+    expect(clonedKey).toEqual({ id: 1 })
+    expect([...cloned.values()][0]).not.toBe(source.get(key))
+  })
+})

@@ -1,18 +1,17 @@
 /**
- * 浏览器环境（URL、剪贴板、文件下载、滚动、可视区域）相关工具函数。
- * @packageDocumentation
+ * 内部工具：把传入的 URL 解析为 `URL` 对象；相对路径在浏览器中基于当前页面地址解析。
+ * @param url - 可选的目标 URL；省略时使用当前页面地址
+ * @returns 解析后的 `URL` 对象
+ * @remarks Node 等无 `window` 的环境只接受绝对 URL，相对路径会抛出 `TypeError`。
  */
+const resolveUrl = (url?: string): URL => {
+  const base = typeof window !== "undefined" ? window.location.href : undefined;
+  return new URL(url ?? base ?? "", base);
+};
 
 /**
  * 解析 URL 的查询字符串（search params）为键值对对象。
- * @param url - 可选的目标 URL；省略时使用当前页面地址 `window.location.href`
- * @returns 以参数名为键、参数值为值的对象（值均为字符串）
- */
-const resolveUrl = (url?: string): URL => new URL(url ?? window.location.href);
-
-/**
- * 解析 URL 的查询字符串（search params）为键值对对象。
- * @param url - 可选的目标 URL；省略时使用当前页面地址 `window.location.href`
+ * @param url - 可选的目标 URL，支持相对路径；省略时使用当前页面地址
  * @returns 以参数名为键、参数值为值的对象（值均为字符串）
  */
 export const getUrlParams = (url?: string): Record<string, string> =>
@@ -45,17 +44,27 @@ export const toQueryString = (params: Record<string, any>): string => {
  * @returns `Promise<boolean>`：复制成功返回 `true`，失败返回 `false`
  */
 export const copyToClipboard = async (text: string): Promise<boolean> => {
-  if (navigator.clipboard) {
-    try { await navigator.clipboard.writeText(text); return true } catch { return false }
+  if (typeof navigator !== "undefined" && navigator.clipboard) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Clipboard API 被拒绝时继续走降级方案
+    }
   }
-  const textarea = document.createElement("textarea")
-  textarea.value = text
-  textarea.style.cssText = "position:fixed;opacity:0"
-  document.body.appendChild(textarea)
-  textarea.select()
-  const result = document.execCommand("copy")
-  document.body.removeChild(textarea)
-  return result
+  if (typeof document === "undefined") return false;
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.style.cssText = "position:fixed;opacity:0";
+  document.body.appendChild(textarea);
+  textarea.select();
+  try {
+    return document.execCommand("copy");
+  } catch {
+    return false;
+  } finally {
+    document.body.removeChild(textarea);
+  }
 };
 
 /**
@@ -123,7 +132,7 @@ export const onScroll = (callback: (scrollY: number) => void): () => void => {
       ticking = true;
     }
   };
-  window.addEventListener("scroll", handler);
+  window.addEventListener("scroll", handler, { passive: true });
   return () => window.removeEventListener("scroll", handler);
 };
 

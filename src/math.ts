@@ -1,8 +1,3 @@
-/**
- * 数学计算与数值处理工具集合。
- * @packageDocumentation
- */
-
 /** 内部辅助：确保两个边界值按 [较小, 较大] 顺序返回。 */
 const _swap = (a: number, b: number): [number, number] => a > b ? [b, a] : [a, b]
 
@@ -49,8 +44,14 @@ export const randomFloat = (min: number, max: number): number => {
  * @returns 四舍五入后的数值
  */
 export const round = (value: number, decimals: number = 0): number => {
-  const factor = 10 ** decimals
-  return Math.round(value * factor) / factor
+  if (!Number.isFinite(value) || !Number.isFinite(decimals)) return value
+  const digits = Math.trunc(decimals)
+  const [mantissa, exponent = "0"] = String(value).split("e")
+  const shifted = Number(`${mantissa}e${Number(exponent) + digits}`)
+  const rounded = Math.round(shifted)
+  if (!Number.isFinite(rounded)) return value
+  const [roundedMantissa, roundedExponent = "0"] = String(rounded).split("e")
+  return Number(`${roundedMantissa}e${Number(roundedExponent) - digits}`)
 }
 
 /**
@@ -87,3 +88,26 @@ export const inRange = (value: number, min: number, max: number): boolean => {
  * @returns 插值结果
  */
 export const lerp = (start: number, end: number, t: number): number => start + (end - start) * t
+
+/**
+ * 转换为整数。
+ * @param value - 待转换的值
+ * @param radix - 进制，默认 `10`（取值 2–36）
+ * @returns 解析出的整数；无法解析时返回 `0`
+ * @remarks 语义等价于 `Number.parseInt`，但把 `NaN` 统一为 `0`，调用方无需重复判空。
+ */
+export const toInt = (value: unknown, radix: number = 10): number => {
+  const result = Number.parseInt(String(value), radix)
+  return Number.isNaN(result) ? 0 : result
+}
+
+/**
+ * 转换为浮点数。
+ * @param value - 待转换的值
+ * @returns 解析出的浮点数；无法解析时返回 `0`
+ * @remarks 语义等价于 `Number.parseFloat`，但把 `NaN` 统一为 `0`。
+ */
+export const toFloat = (value: unknown): number => {
+  const result = Number.parseFloat(String(value))
+  return Number.isNaN(result) ? 0 : result
+}

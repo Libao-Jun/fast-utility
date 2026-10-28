@@ -4,7 +4,7 @@
 
 [English](./README.en.md) | 简体中文
 
-fast-utility 把日常开发中反复出现的工具函数收拢到一处：类型判断、时间日期、数字与货币格式化、字符串处理、数组与对象操作、深拷贝、存储与 Cookie、浏览器增强、防抖节流、数学计算与格式校验，共 111 个函数。全部从包根按名导出，用到哪个打包哪个。
+fast-utility 把日常开发中反复出现的工具函数收拢到一处：类型判断、时间日期、数字与货币格式化、字符串处理、数组与对象操作、深拷贝、存储与 Cookie、浏览器增强、防抖节流、数学计算与格式校验，共 159 个函数。全部从包根按名导出，用到哪个打包哪个。
 
 - **零运行时依赖**：安装体积即自身代码。
 - **Tree-shaking 友好**：每个函数独立导出，未引用的不会进入产物。
@@ -55,7 +55,7 @@ search.cancel();
 | 函数 | 说明 | 示例 |
 | --- | --- | --- |
 | `isArray(v)` | 是否数组 | `isArray([])` → `true` |
-| `isObject(v)` | 是否普通对象（排除数组与 `null`） | `isObject([])` → `false` |
+| `isObject(v)` | 是否普通对象（排除数组、`Date`、`Map` 等） | `isObject([])` → `false` |
 | `is(v, type)` | 按 `Object.prototype.toString` 比对类型名 | `is([], "Array")` → `true` |
 | `isFunction(v)` | 是否可调用对象 | `isFunction(() => {})` → `true` |
 | `isAsyncFunction(v)` | 是否 `async` 函数 | `isAsyncFunction(async () => {})` → `true` |
@@ -71,6 +71,7 @@ search.cancel();
 | `isNull(v)` | 是否 `null` | `isNull(null)` → `true` |
 | `isDef(v)` / `isUnDef(v)` | 是否已定义 / 未定义 | `isDef(0)` → `true` |
 | `isNullOrUnDef(v)` | 是否 `null` 或 `undefined` | `isNullOrUnDef(undefined)` → `true` |
+| `isNil(v)` | 是否 `null` 或 `undefined`（语义化别名） | `isNil(null)` → `true` |
 | `isEmpty(v)` | 是否为空：空串、空数组、空对象、空 `Map` / `Set`、无效日期等 | `isEmpty({})` → `true` |
 | `isEmptySv(v)` | 简化版空值判断（字符串、数组、`Map` / `Set`、`ArrayBuffer` 视图、对象） | `isEmptySv([])` → `true` |
 | `isHexColor(s)` | 是否 `#RGB` / `#RRGGBB` | `isHexColor("#fff")` → `true` |
@@ -79,6 +80,9 @@ search.cancel();
 | `isIOS()` | 是否 iOS 设备（读取 UA，仅浏览器） | 依 UA 而定 |
 | `isWindow(v)` | 是否 `window` 对象 | `isWindow(window)` → `true` |
 | `isElement(v)` | 是否 DOM 元素 | `isElement(document.body)` → `true` |
+| `isError(v)` | 是否 `Error` 实例 | `isError(new Error())` → `true` |
+| `isRegExp(v)` | 是否正则对象 | `isRegExp(/a/)` → `true` |
+| `isTypedArray(v)` | 是否 TypedArray（不含 `DataView`） | `isTypedArray(new Uint8Array())` → `true` |
 
 > `isBasicType` 是 `isPrimitive` 的别名（行为一致）；`isEmpty` 与 `isEmptySv` 对 `Date`、`DataView` 的处理不同；`isEmail` 比 `isValidEmail` 严格（不接受 `+` 与本地部分的点号）。
 
@@ -128,12 +132,19 @@ search.cancel();
 | `randomString(len = 8)` | 随机字母数字串 | `randomString(6)` → 如 `"aZ3kL9"` |
 | `uuid()` | UUID v4（RFC 4122） | `uuid()` → `"550e8400-..."` |
 | `byteSize(s)` | UTF-8 字节长度 | `byteSize("你好")` → `6` |
+| `words(s)` | 拆分为 ASCII 单词数组 | `words("fooBar baz")` → `["foo", "Bar", "baz"]` |
+| `camelCase(s)` | 转换为小驼峰 | `camelCase("foo_bar")` → `"fooBar"` |
+| `pascalCase(s)` | 转换为大驼峰 | `pascalCase("foo bar")` → `"FooBar"` |
+| `snakeCase(s)` | 转换为下划线命名 | `snakeCase("fooBar")` → `"foo_bar"` |
+| `kebabCase(s)` | 转换为短横线命名 | `kebabCase("fooBar")` → `"foo-bar"` |
+| `deburr(s)` | 去除拉丁变音符号 | `deburr("café")` → `"cafe"` |
+| `escapeRegExp(s)` | 转义正则元字符 | `escapeRegExp("a.b")` → `"a\\.b"` |
 
 ### 数组
 
 | 函数 | 说明 | 示例 |
 | --- | --- | --- |
-| `unique(arr)` | 按 `===` 去重 | `unique([1, 2, 2])` → `[1, 2]` |
+| `unique(arr)` | 按 SameValueZero 去重（`NaN` 视为相同） | `unique([1, 2, 2])` → `[1, 2]` |
 | `uniqueByKey(arr, key)` | 对象数组按 key 去重，**保留最后一次出现** | `uniqueByKey([{ id: 1, n: "a" }, { id: 1, n: "b" }], "id")` → `[{ id: 1, n: "b" }]` |
 | `sortNumAsc(arr)` / `sortNumDesc(arr)` | 数值升序 / 降序，返回新数组 | `sortNumAsc([3, 1, 2])` → `[1, 2, 3]` |
 | `sortByKey(arr, key, order = "asc")` | 按数值属性排序，返回新数组 | `sortByKey([{ n: 3 }, { n: 1 }], "n")` → `[{ n: 1 }, { n: 3 }]` |
@@ -143,17 +154,42 @@ search.cancel();
 | `arrFind(arr, key, value)` | 查找首个匹配项，未找到返回 `undefined` | `arrFind([{ id: 2 }], "id", 2)` → `{ id: 2 }` |
 | `groupBy(arr, key)` | 按属性分组 | `groupBy([{ t: "a" }, { t: "b" }], "t")` → `{ a: [...], b: [...] }` |
 | `createRange(len, mapFn?)` | 生成长度序列，可传映射函数 | `createRange(3)` → `[0, 1, 2]` |
+| `chunk(arr, size)` | 按固定长度切分数组 | `chunk([1, 2, 3], 2)` → `[[1, 2], [3]]` |
+| `compact(arr)` | 去除假值 | `compact([0, 1, "", 2])` → `[1, 2]` |
+| `difference(arr, ...others)` | 差集 | `difference([1, 2, 3], [2])` → `[1, 3]` |
+| `intersection(arr, ...others)` | 交集（去重） | `intersection([1, 2], [2, 3])` → `[2]` |
+| `union(...arrs)` | 并集（去重） | `union([1, 2], [2, 3])` → `[1, 2, 3]` |
+| `drop(arr, n = 1)` / `dropRight(arr, n = 1)` | 从开头 / 末尾丢弃 n 个 | `drop([1, 2, 3], 1)` → `[2, 3]` |
+| `take(arr, n = 1)` / `takeRight(arr, n = 1)` | 从开头 / 末尾截取 n 个 | `take([1, 2, 3], 2)` → `[1, 2]` |
+| `nth(arr, index)` | 读取元素，支持负索引 | `nth([1, 2, 3], -1)` → `3` |
+| `sample(arr)` | 随机取一个元素 | `sample([1, 2, 3])` → `2`（随机） |
+| `shuffle(arr)` | 洗牌，返回新数组 | `shuffle([1, 2, 3])` |
+| `sampleSize(arr, n)` | 随机取 n 个不重复元素 | `sampleSize([1, 2, 3], 2)` |
+| `zip(...arrs)` | 按最长数组拉链合并 | `zip([1, 2], ["a"])` → `[[1, "a"], [2, undefined]]` |
+| `partition(arr, fn)` | 按条件拆分为两组 | `partition([1, 2, 3], n => n % 2)` → `[[1, 3], [2]]` |
+| `countBy(arr, keyOrFn)` | 按属性或函数计数 | `countBy([{ t: "a" }, { t: "a" }], "t")` → `{ a: 2 }` |
+| `keyBy(arr, keyOrFn)` | 按属性或函数建立索引 | `keyBy([{ id: 1 }], "id")` → `{ "1": { id: 1 } }` |
+| `maxBy(arr, fn)` / `minBy(arr, fn)` | 按数值取值取最大 / 最小元素 | `maxBy([{ n: 1 }, { n: 2 }], o => o.n)` → `{ n: 2 }` |
+| `sortBy(arr, fn)` | 按取值升序排序，返回新数组 | `sortBy([3, 1], n => n)` → `[1, 3]` |
 
 ### 对象与拷贝
 
 | 函数 | 说明 | 示例 |
 | --- | --- | --- |
-| `isEqual(x, y)` | 深度比较，支持 `Date` / `RegExp` | `isEqual({ a: 1 }, { a: 1 })` → `true` |
+| `isEqual(x, y)` | 深度比较，支持 `Date` / `RegExp` / `Map` / `Set` / 循环引用 | `isEqual({ a: 1 }, { a: 1 })` → `true` |
 | `shallowClone(v)` | 浅拷贝，嵌套对象仍共享引用 | `shallowClone({ a: 1 })` |
 | `deepClone(v)` | 递归深拷贝，支持 `Date` / `RegExp` / `Map` / `Set` / 循环引用 | `deepClone({ a: { b: 1 } })` |
 | `deepCloneWithJSON(v)` | JSON 深拷贝，会丢失 `Date` / `Map` / `Set` / 函数 | `deepCloneWithJSON({ a: 1 })` |
 | `structClone(v, opts?)` | `structuredClone` 深拷贝，需 Node 17+ / 现代浏览器 | `structClone({ a: 1 })` |
 | `filterEmptyValues(obj)` | 去除 `null` / `undefined` / `""` 属性 | `filterEmptyValues({ a: 1, b: "" })` → `{ a: 1 }` |
+| `pick(obj, keys)` | 挑选自有属性 | `pick({ a: 1, b: 2 }, ["a"])` → `{ a: 1 }` |
+| `omit(obj, keys)` | 排除指定属性 | `omit({ a: 1, b: 2 }, ["b"])` → `{ a: 1 }` |
+| `mapValues(obj, fn)` | 映射对象的值 | `mapValues({ a: 1 }, v => v * 2)` → `{ a: 2 }` |
+| `mapKeys(obj, fn)` | 映射对象的键 | `mapKeys({ a: 1 }, (_, k) => k.toUpperCase())` → `{ A: 1 }` |
+| `invert(obj)` | 键值互换 | `invert({ a: "x" })` → `{ x: "a" }` |
+| `merge(target, ...sources)` | 深度合并普通对象，返回新对象 | `merge({ a: { b: 1 } }, { a: { c: 2 } })` → `{ a: { b: 1, c: 2 } }` |
+| `get(obj, path, default?)` | 按路径读取，支持 `a[0].b` | `get({ a: { b: 1 } }, "a.b")` → `1` |
+| `has(obj, path)` | 判断路径是否存在 | `has({ a: { b: 1 } }, "a.b")` → `true` |
 
 ### 存储与 Cookie（仅浏览器）
 
@@ -170,7 +206,7 @@ search.cancel();
 
 | 函数 | 说明 | 示例 |
 | --- | --- | --- |
-| `getUrlParams(url?)` | 查询参数转对象；省略 `url` 时用当前地址 | `getUrlParams("https://x.com/?a=1")` → `{ a: "1" }` |
+| `getUrlParams(url?)` | 查询参数转对象，支持相对路径；省略 `url` 时用当前地址 | `getUrlParams("https://x.com/?a=1")` → `{ a: "1" }` |
 | `getUrlParam(key, url?)` | 读取单个参数，不存在返回 `null` | `getUrlParam("a", "https://x.com/?a=1")` → `"1"` |
 | `toQueryString(obj)` | 对象转查询串，忽略 `null` / `undefined` | `toQueryString({ a: 1, b: "x y" })` → `"a=1&b=x%20y"` |
 | `copyToClipboard(text)` | 复制文本，优先 Clipboard API，返回 `Promise<boolean>` | `await copyToClipboard("hi")` → `true` |
@@ -186,6 +222,12 @@ search.cancel();
 | --- | --- | --- |
 | `debounce(fn, delay = 300, opts?)` | 停止调用 `delay` 毫秒后执行；`leading` 默认 `false`、`trailing` 默认 `true`；返回值带 `cancel()` | `debounce(save, 500)` |
 | `throttle(fn, interval = 300, opts?)` | 固定间隔内最多执行一次；`leading` / `trailing` 默认均为 `true`；返回值带 `cancel()` | `throttle(onScroll, 200)` |
+| `once(fn)` | 最多执行一次并缓存结果 | `const init = once(setup)` |
+| `memoize(fn, resolver?)` | 按首参缓存结果，可自定义缓存键 | `const f = memoize(slowFn)` |
+| `pipe(...fns)` | 从左到右组合函数 | `pipe(f, g)(x)` → `g(f(x))` |
+| `compose(...fns)` | 从右到左组合函数 | `compose(f, g)(x)` → `f(g(x))` |
+| `partial(fn, ...args)` | 预置前部参数 | `partial(add, 1)(2)` → `3` |
+| `attempt(fn)` | 捕获异常，返回 `[error, value]` | `attempt(() => 1)` → `[undefined, 1]` |
 
 ### 数学
 
@@ -199,6 +241,8 @@ search.cancel();
 | `average(arr)` | 平均值，空数组返回 `NaN` | `average([1, 2, 3])` → `2` |
 | `inRange(v, min, max)` | 是否在闭区间内 | `inRange(5, 1, 10)` → `true` |
 | `lerp(start, end, t)` | 线性插值 | `lerp(0, 100, 0.5)` → `50` |
+| `toInt(v, radix = 10)` | 转换为整数，失败返回 `0` | `toInt("42.9")` → `42` |
+| `toFloat(v)` | 转换为浮点数，失败返回 `0` | `toFloat("3.14px")` → `3.14` |
 
 ### 格式校验
 
@@ -207,6 +251,7 @@ search.cancel();
 | `checkCardNo(v)` | 身份证格式校验（15 / 18 位，末位可为 `X`），不校验校验位 | `checkCardNo("11010119900307321X")` → `true` |
 | `isEmail(v)` | 邮箱格式校验（较严格） | `isEmail("a@b.com")` → `true` |
 | `isTel(v)` | 国内手机号（`1` 开头、第二位 `3`–`9`、共 11 位） | `isTel("13812345678")` → `true` |
+| `isUrl(v)` | 是否合法的 HTTP / HTTPS URL | `isUrl("https://x.com")` → `true` |
 
 ## License
 

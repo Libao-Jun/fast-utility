@@ -1,7 +1,7 @@
 {
   "name": "fast-utility",
   "version": "1.0.0",
-  "description": "前端常用工具函数宝库（fn = function + vault = 宝库）/ A lightweight, zero-dependency collection of frontend utility functions. 轻量、零依赖、支持 Tree-shaking 的 JavaScript / TypeScript 常用工具函数库",
+  "description": "轻量、高效的 JS / TS 工具函数库，零依赖、Tree-shaking 友好，浏览器与 Node 通用。",
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
@@ -34,11 +34,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Libao-Jun/fnvault"
+    "url": "https://github.com/Libao-Jun/fast-utility"
   },
-  "homepage": "https://github.com/Libao-Jun/fnvault#readme",
+  "homepage": "https://github.com/Libao-Jun/fast-utility#readme",
   "bugs": {
-    "url": "https://github.com/Libao-Jun/fnvault/issues"
+    "url": "https://github.com/Libao-Jun/fast-utility/issues"
   },
   "packageManager": "pnpm@10.19.0",
   "devDependencies": {

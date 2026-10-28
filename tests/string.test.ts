@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { randomString, uuid, escapeHtml, unescapeHtml, stripHtml, ensurePrefix, ensureSuffix, removePrefix, removeSuffix, byteSize, maskName } from '../src/string'
+import { randomString, uuid, escapeHtml, unescapeHtml, stripHtml, ensurePrefix, ensureSuffix, removePrefix, removeSuffix, byteSize, maskName, words, camelCase, pascalCase, snakeCase, kebabCase, deburr, escapeRegExp } from '../src/string'
 
 // ============================================================
 // randomString
@@ -338,5 +338,81 @@ describe('maskName', () => {
 
   it('数字类型转为字符串后脱敏', () => {
     expect(maskName(123)).toBe('1**')
+  })
+})
+
+// ============================================================
+// words
+// ============================================================
+describe('words', () => {
+  it('按常见分隔符拆分', () => {
+    expect(words('fooBar baz-qux_quux2')).toEqual(['foo', 'Bar', 'baz', 'qux', 'quux', '2'])
+  })
+
+  it('拆分连续大写缩写', () => {
+    expect(words('XMLHttpRequest')).toEqual(['XML', 'Http', 'Request'])
+  })
+
+  it('空字符串返回空数组', () => {
+    expect(words('')).toEqual([])
+  })
+})
+
+// ============================================================
+// case conversions
+// ============================================================
+describe('camelCase', () => {
+  it('转换空格、下划线、短横线与驼峰输入', () => {
+    expect(camelCase('foo bar')).toBe('fooBar')
+    expect(camelCase('foo_bar')).toBe('fooBar')
+    expect(camelCase('foo-bar')).toBe('fooBar')
+    expect(camelCase('FooBar')).toBe('fooBar')
+  })
+})
+
+describe('pascalCase', () => {
+  it('每个单词首字母大写并拼接', () => {
+    expect(pascalCase('foo bar')).toBe('FooBar')
+    expect(pascalCase('foo_bar-baz')).toBe('FooBarBaz')
+  })
+})
+
+describe('snakeCase', () => {
+  it('转换为下划线命名', () => {
+    expect(snakeCase('fooBar baz')).toBe('foo_bar_baz')
+  })
+})
+
+describe('kebabCase', () => {
+  it('转换为短横线命名', () => {
+    expect(kebabCase('fooBar_baz')).toBe('foo-bar-baz')
+  })
+})
+
+// ============================================================
+// deburr
+// ============================================================
+describe('deburr', () => {
+  it('去除拉丁变音符号', () => {
+    expect(deburr('café naïve')).toBe('cafe naive')
+  })
+
+  it('不改变普通文本', () => {
+    expect(deburr('hello 你好')).toBe('hello 你好')
+  })
+})
+
+// ============================================================
+// escapeRegExp
+// ============================================================
+describe('escapeRegExp', () => {
+  it('转义正则元字符', () => {
+    expect(escapeRegExp('a.b*c')).toBe('a\\.b\\*c')
+  })
+
+  it('转义后可安全匹配字面量', () => {
+    const pattern = new RegExp(escapeRegExp('a.b*c'))
+    expect(pattern.test('a.b*c')).toBe(true)
+    expect(pattern.test('axbbc')).toBe(false)
   })
 })

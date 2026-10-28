@@ -1,9 +1,4 @@
 /**
- * 字符串处理与生成工具集合。
- * @packageDocumentation
- */
-
-/**
  * 生成指定长度的随机字符串（由大小写字母与数字组成）。
  * @param length - 字符串长度，默认 `8`
  * @returns 随机字符串
@@ -16,8 +11,12 @@ export const randomString = (length: number = 8): string => {
 /**
  * 生成 UUID v4（随机 UUID，符合 RFC 4122）。
  * @returns 形如 `xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx` 的 UUID 字符串
+ * @remarks 优先使用 `crypto.randomUUID()`；环境不支持时回退到基于 `Math.random` 的实现。
  */
 export const uuid = (): string => {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID()
+  }
   const template = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
   return template.replace(/[xy]/g, (c) => {
     const r = Math.random() * 16 | 0
@@ -106,3 +105,73 @@ export const maskName = (name: unknown): string => {
   const chars = [...str]
   return chars.length === 1 ? str : chars[0] + '*'.repeat(chars.length - 1)
 }
+
+/** 内部工具：ASCII 单词匹配（兼容 camelCase、snake_case、kebab-case 与空格分隔）。 */
+const WORD_PATTERN = /[A-Z]?[a-z]+|[A-Z]+(?![a-z])|\d+/g
+
+/**
+ * 将字符串拆分为单词数组（仅识别 ASCII 字母与数字）。
+ * @param str - 原始字符串
+ * @returns 单词数组；无匹配时返回空数组
+ * @remarks 支持 `fooBar`、`foo_bar`、`foo-bar`、`foo bar` 等常见分隔形式；中文等非 ASCII 字符不会被识别为单词。
+ */
+export const words = (str: string): string[] => {
+  if (!str) return []
+  return str.match(WORD_PATTERN) ?? []
+}
+
+/** 内部工具：单词首字母大写并统一小写其余部分。 */
+const capitalizeWord = (word: string): string =>
+  word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+
+/**
+ * 转换为小驼峰命名（camelCase）。
+ * @param str - 原始字符串
+ * @returns 小驼峰字符串；无单词时返回空字符串
+ */
+export const camelCase = (str: string): string => {
+  return words(str)
+    .map((word, index) => index === 0 ? word.toLowerCase() : capitalizeWord(word))
+    .join('')
+}
+
+/**
+ * 转换为大驼峰命名（PascalCase）。
+ * @param str - 原始字符串
+ * @returns 大驼峰字符串；无单词时返回空字符串
+ */
+export const pascalCase = (str: string): string =>
+  words(str).map(capitalizeWord).join('')
+
+/**
+ * 转换为下划线命名（snake_case）。
+ * @param str - 原始字符串
+ * @returns 下划线字符串；无单词时返回空字符串
+ */
+export const snakeCase = (str: string): string =>
+  words(str).map((word) => word.toLowerCase()).join('_')
+
+/**
+ * 转换为短横线命名（kebab-case）。
+ * @param str - 原始字符串
+ * @returns 短横线字符串；无单词时返回空字符串
+ */
+export const kebabCase = (str: string): string =>
+  words(str).map((word) => word.toLowerCase()).join('-')
+
+/**
+ * 去除拉丁字符上的变音符号（如 `café` → `cafe`）。
+ * @param str - 原始字符串
+ * @returns 去除组合附加符号后的字符串
+ * @remarks 基于 `String.prototype.normalize('NFD')`，不处理中文、日文等非拉丁文字。
+ */
+export const deburr = (str: string): string =>
+  str.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+
+/**
+ * 转义字符串中的正则元字符，便于安全地拼接到 `RegExp` 中。
+ * @param str - 原始字符串
+ * @returns 转义后的字符串
+ */
+export const escapeRegExp = (str: string): string =>
+  str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')

@@ -1,9 +1,4 @@
 /**
- * 浏览器 Cookie 读写工具（操作 `document.cookie`）。
- * @packageDocumentation
- */
-
-/**
  * 设置 Cookie（默认不过期，即会话级 Cookie）。
  * @param name - Cookie 名称（会自动 `encodeURIComponent` 编码）
  * @param value - Cookie 值（会自动 `encodeURIComponent` 编码）

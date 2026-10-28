@@ -1,9 +1,4 @@
 /**
- * `localStorage` 读写工具（自动进行 JSON 序列化 / 反序列化）。
- * @packageDocumentation
- */
-
-/**
  * 读取 `localStorage` 中的值（自动尝试 `JSON.parse` 反序列化）。
  * @template T - 期望返回的数据类型，默认 `any`
  * @param key - 存储键名

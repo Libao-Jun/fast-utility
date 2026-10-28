@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { checkCardNo, isEmail, isTel } from '../src/validation'
+import { checkCardNo, isEmail, isTel, isUrl } from '../src/validation'
 
 // ============================================================
 // checkCardNo
@@ -133,5 +133,30 @@ describe('isTel', () => {
 
   it('空字符串返回 false', () => {
     expect(isTel('')).toBe(false)
+  })
+})
+
+// ============================================================
+// isUrl
+// ============================================================
+describe('isUrl', () => {
+  it('合法 HTTP / HTTPS 地址返回 true', () => {
+    expect(isUrl('https://example.com')).toBe(true)
+    expect(isUrl('http://localhost:3000/path?q=1')).toBe(true)
+  })
+
+  it('缺少协议返回 false', () => {
+    expect(isUrl('example.com')).toBe(false)
+    expect(isUrl('//example.com')).toBe(false)
+  })
+
+  it('非 HTTP 协议返回 false', () => {
+    expect(isUrl('ftp://example.com')).toBe(false)
+    expect(isUrl('mailto:a@b.com')).toBe(false)
+  })
+
+  it('非法字符串返回 false', () => {
+    expect(isUrl('not a url')).toBe(false)
+    expect(isUrl('')).toBe(false)
   })
 })

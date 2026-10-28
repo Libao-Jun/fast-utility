@@ -363,7 +363,11 @@ describe('onScroll', () => {
 
     const cleanup = onScroll(callback)
 
-    expect(addEventListenerSpy).toHaveBeenCalledWith('scroll', expect.any(Function))
+    expect(addEventListenerSpy).toHaveBeenCalledWith(
+      'scroll',
+      expect.any(Function),
+      { passive: true },
+    )
     expect(typeof cleanup).toBe('function')
   })
 
@@ -496,5 +500,18 @@ describe('observeIntersection', () => {
     observeIntersection(target, vi.fn(), undefined, options)
 
     expect(IntersectionObserver).toHaveBeenCalledWith(expect.any(Function), options)
+  })
+})
+
+// ============================================================
+// relative URL support
+// ============================================================
+describe('relative URL support', () => {
+  it('getUrlParams 支持相对路径', () => {
+    expect(getUrlParams('?a=1&b=2')).toEqual({ a: '1', b: '2' })
+  })
+
+  it('getUrlParam 支持相对路径', () => {
+    expect(getUrlParam('a', '?a=1')).toBe('1')
   })
 })

@@ -1,9 +1,4 @@
 /**
- * 表单 / 输入校验工具集合。
- * @packageDocumentation
- */
-
-/**
  * 校验身份证号码（支持 15 位 / 18 位，末位可为 `X`）。
  * @param value - 待校验的身份证号码字符串
  * @returns 格式合法返回 `true`（仅校验格式，不校验校验位真伪）
@@ -31,4 +26,20 @@ export const isEmail = (value: string): boolean => {
  */
 export const isTel = (value: string | number): boolean => {
   return /^1[3-9]\d{9}$/.test(value.toString())
+}
+
+/**
+ * 校验是否为合法的 HTTP / HTTPS URL。
+ * @param value - 待校验的字符串
+ * @returns 合法返回 `true`
+ * @remarks 仅接受 `http://` 与 `https://` 协议；`mailto:`、`ftp:`、相对路径等一律返回 `false`。
+ */
+export const isUrl = (value: string): boolean => {
+  if (typeof value !== "string" || !/^https?:\/\//i.test(value)) return false
+  try {
+    new URL(value)
+    return true
+  } catch {
+    return false
+  }
 }

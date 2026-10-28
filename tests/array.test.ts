@@ -1,5 +1,38 @@
 import { describe, it, expect } from 'vitest'
-import { unique, uniqueByKey, sortNumAsc, sortNumDesc, sortByKey, toArray, mergeArrays, flatten, arrFind, groupBy, filterEmptyValues, createRange } from '../src/array'
+import {
+  unique,
+  uniqueByKey,
+  sortNumAsc,
+  sortNumDesc,
+  sortByKey,
+  toArray,
+  mergeArrays,
+  flatten,
+  arrFind,
+  groupBy,
+  filterEmptyValues,
+  createRange,
+  chunk,
+  compact,
+  difference,
+  intersection,
+  union,
+  drop,
+  dropRight,
+  take,
+  takeRight,
+  nth,
+  sample,
+  shuffle,
+  sampleSize,
+  zip,
+  partition,
+  countBy,
+  keyBy,
+  maxBy,
+  minBy,
+  sortBy,
+} from '../src/array'
 
 // ============================================================
 // unique
@@ -510,5 +543,285 @@ describe('createRange', () => {
 
   it('should generate 1-based range with custom map', () => {
     expect(createRange(3, (i) => i + 1)).toEqual([1, 2, 3])
+  })
+
+  it('负数或非法长度返回空数组', () => {
+    expect(createRange(-1)).toEqual([])
+    expect(createRange(Number.NaN)).toEqual([])
+  })
+})
+
+// ============================================================
+// chunk
+// ============================================================
+describe('chunk', () => {
+  it('按固定长度切分，末段可不足', () => {
+    expect(chunk([1, 2, 3, 4, 5], 2)).toEqual([[1, 2], [3, 4], [5]])
+  })
+
+  it('长度大于数组时返回单个子数组', () => {
+    expect(chunk([1, 2], 5)).toEqual([[1, 2]])
+  })
+
+  it('非法长度返回空数组', () => {
+    expect(chunk([1, 2], 0)).toEqual([])
+    expect(chunk([1, 2], -1)).toEqual([])
+  })
+
+  it('不修改原数组', () => {
+    const source = [1, 2, 3]
+    chunk(source, 2)
+    expect(source).toEqual([1, 2, 3])
+  })
+})
+
+// ============================================================
+// compact
+// ============================================================
+describe('compact', () => {
+  it('移除所有假值', () => {
+    expect(compact([0, 1, false, 2, '', 3, null, undefined, Number.NaN])).toEqual([1, 2, 3])
+  })
+
+  it('保留真值中的对象与数组', () => {
+    expect(compact([[], {}, 'x'])).toEqual([[], {}, 'x'])
+  })
+})
+
+// ============================================================
+// difference / intersection / union
+// ============================================================
+describe('difference', () => {
+  it('返回基准数组中不在其余数组的元素', () => {
+    expect(difference([1, 2, 3, 2], [2])).toEqual([1, 3])
+  })
+
+  it('支持多个排除数组', () => {
+    expect(difference([1, 2, 3, 4], [2], [4])).toEqual([1, 3])
+  })
+
+  it('空排除数组返回原数组副本', () => {
+    const source = [1, 2]
+    const result = difference(source)
+    expect(result).toEqual([1, 2])
+    expect(result).not.toBe(source)
+  })
+})
+
+describe('intersection', () => {
+  it('返回所有数组共有的元素并去重', () => {
+    expect(intersection([1, 2, 2, 3], [2, 3, 4])).toEqual([2, 3])
+  })
+
+  it('支持多个数组', () => {
+    expect(intersection([1, 2, 3], [2, 3], [3, 4])).toEqual([3])
+  })
+
+  it('无其余数组时返回去重结果', () => {
+    expect(intersection([1, 1, 2])).toEqual([1, 2])
+  })
+})
+
+describe('union', () => {
+  it('合并并去重', () => {
+    expect(union([1, 2], [2, 3], [3, 4])).toEqual([1, 2, 3, 4])
+  })
+
+  it('保持首次出现顺序', () => {
+    expect(union([3, 1], [2, 1])).toEqual([3, 1, 2])
+  })
+})
+
+// ============================================================
+// drop / take / nth
+// ============================================================
+describe('drop / dropRight / take / takeRight', () => {
+  const source = [1, 2, 3, 4]
+
+  it('drop 从开头丢弃', () => {
+    expect(drop(source, 2)).toEqual([3, 4])
+    expect(drop(source)).toEqual([2, 3, 4])
+    expect(drop(source, -1)).toEqual([1, 2, 3, 4])
+  })
+
+  it('dropRight 从末尾丢弃', () => {
+    expect(dropRight(source, 2)).toEqual([1, 2])
+    expect(dropRight(source, 10)).toEqual([])
+  })
+
+  it('take 从开头截取', () => {
+    expect(take(source, 2)).toEqual([1, 2])
+    expect(take(source, -1)).toEqual([])
+    expect(take(source, 10)).toEqual([1, 2, 3, 4])
+  })
+
+  it('takeRight 从末尾截取', () => {
+    expect(takeRight(source, 2)).toEqual([3, 4])
+    expect(takeRight(source, 10)).toEqual([1, 2, 3, 4])
+  })
+
+  it('均不修改原数组', () => {
+    drop(source, 1)
+    take(source, 1)
+    expect(source).toEqual([1, 2, 3, 4])
+  })
+})
+
+describe('nth', () => {
+  it('支持正负索引', () => {
+    expect(nth([1, 2, 3], 0)).toBe(1)
+    expect(nth([1, 2, 3], -1)).toBe(3)
+  })
+
+  it('越界返回 undefined', () => {
+    expect(nth([1, 2, 3], 5)).toBeUndefined()
+    expect(nth([1, 2, 3], -5)).toBeUndefined()
+  })
+})
+
+// ============================================================
+// sample / shuffle / sampleSize
+// ============================================================
+describe('sample', () => {
+  it('返回数组中的元素', () => {
+    expect([1, 2, 3]).toContain(sample([1, 2, 3]))
+  })
+
+  it('空数组返回 undefined', () => {
+    expect(sample([])).toBeUndefined()
+  })
+})
+
+describe('shuffle', () => {
+  it('返回等长且元素相同的副本', () => {
+    const source = [1, 2, 3, 4, 5]
+    const result = shuffle(source)
+    expect(result).not.toBe(source)
+    expect(result).toHaveLength(source.length)
+    expect([...result].sort()).toEqual([...source].sort())
+  })
+
+  it('不修改原数组', () => {
+    const source = [1, 2, 3]
+    shuffle(source)
+    expect(source).toEqual([1, 2, 3])
+  })
+})
+
+describe('sampleSize', () => {
+  it('返回指定数量的不重复元素', () => {
+    const result = sampleSize([1, 2, 3, 4], 2)
+    expect(result).toHaveLength(2)
+    expect(new Set(result).size).toBe(2)
+  })
+
+  it('数量超出长度时返回全部元素', () => {
+    expect(sampleSize([1, 2], 10)).toHaveLength(2)
+  })
+
+  it('数量为 0 时返回空数组', () => {
+    expect(sampleSize([1, 2], 0)).toEqual([])
+  })
+})
+
+// ============================================================
+// zip
+// ============================================================
+describe('zip', () => {
+  it('按最长数组对齐，缺失补 undefined', () => {
+    expect(zip([1, 2], ['a'])).toEqual([[1, 'a'], [2, undefined]])
+  })
+
+  it('空输入返回空数组', () => {
+    expect(zip()).toEqual([])
+  })
+})
+
+// ============================================================
+// partition
+// ============================================================
+describe('partition', () => {
+  it('按条件拆分为两组并保持顺序', () => {
+    expect(partition([1, 2, 3, 4], (value) => value % 2 === 0)).toEqual([[2, 4], [1, 3]])
+  })
+
+  it('判定函数可读取索引', () => {
+    expect(partition(['a', 'b'], (_value, index) => index === 0)).toEqual([['a'], ['b']])
+  })
+})
+
+// ============================================================
+// countBy / keyBy
+// ============================================================
+describe('countBy', () => {
+  it('按属性统计次数', () => {
+    expect(countBy([{ type: 'a' }, { type: 'b' }, { type: 'a' }], 'type')).toEqual({ a: 2, b: 1 })
+  })
+
+  it('按取值函数统计次数', () => {
+    expect(countBy([1, 2, 3, 4], (value) => (value % 2 === 0 ? 'even' : 'odd')))
+      .toEqual({ odd: 2, even: 2 })
+  })
+
+  it('空数组返回空对象', () => {
+    expect(countBy([], (value: number) => value)).toEqual({})
+  })
+})
+
+describe('keyBy', () => {
+  it('按属性建立索引，后者覆盖前者', () => {
+    const result = keyBy([{ id: 1, name: 'a' }, { id: 1, name: 'b' }], 'id')
+    expect(result).toEqual({ '1': { id: 1, name: 'b' } })
+  })
+
+  it('按取值函数建立索引', () => {
+    expect(keyBy([{ id: 1 }], (item) => `id-${item.id}`)).toEqual({ 'id-1': { id: 1 } })
+  })
+})
+
+// ============================================================
+// maxBy / minBy
+// ============================================================
+describe('maxBy / minBy', () => {
+  const items = [{ n: 3 }, { n: 1 }, { n: 2 }]
+
+  it('按取值函数返回最大 / 最小元素', () => {
+    expect(maxBy(items, (item) => item.n)).toEqual({ n: 3 })
+    expect(minBy(items, (item) => item.n)).toEqual({ n: 1 })
+  })
+
+  it('空数组返回 undefined', () => {
+    expect(maxBy([], (item: { n: number }) => item.n)).toBeUndefined()
+    expect(minBy([], (item: { n: number }) => item.n)).toBeUndefined()
+  })
+
+  it('不修改原数组', () => {
+    maxBy(items, (item) => item.n)
+    expect(items).toEqual([{ n: 3 }, { n: 1 }, { n: 2 }])
+  })
+})
+
+// ============================================================
+// sortBy
+// ============================================================
+describe('sortBy', () => {
+  it('按数字取值升序', () => {
+    expect(sortBy([{ n: 3 }, { n: 1 }], (item) => item.n)).toEqual([{ n: 1 }, { n: 3 }])
+  })
+
+  it('按字符串取值升序', () => {
+    expect(sortBy(['b', 'a', 'c'], (value) => value)).toEqual(['a', 'b', 'c'])
+  })
+
+  it('返回新数组且不修改入参', () => {
+    const source = [2, 1]
+    const result = sortBy(source, (value) => value)
+    expect(result).not.toBe(source)
+    expect(source).toEqual([2, 1])
+  })
+
+  it('取值相等时保持原有顺序', () => {
+    const source = [{ k: 1, id: 'a' }, { k: 1, id: 'b' }]
+    expect(sortBy(source, (item) => item.k).map((item) => item.id)).toEqual(['a', 'b'])
   })
 })

@@ -1,9 +1,4 @@
 /**
- * 格式化相关工具：日期、货币、数字、字符串样式与脱敏。
- * @packageDocumentation
- */
-
-/**
  * 格式化为完整的日期时间（中文区域，斜杠分隔 `YYYY/MM/DD HH:mm:ss`，24 小时制）。
  * @param date - 待格式化的 `Date` 对象
  * @returns 形如 `2026/09/20 14:30:05` 的字符串
@@ -159,7 +154,7 @@ export const truncate = (str: string, maxLength: number, suffix = "..."): string
 /**
  * 按"字符"（含中文按一个字计）截断文本，对中文更友好。
  * @param str - 原始字符串
- * @param maxWords - 允许的最大字符数（含后缀）
+ * @param maxWords - 保留的最大字符数（不含后缀）
  * @param suffix - 截断后缀，默认 `"..."`
  * @returns 截断后的字符串
  */

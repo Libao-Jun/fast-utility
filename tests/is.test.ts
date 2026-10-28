@@ -28,6 +28,10 @@ import {
   isEmpty,
   isEmptySv,
   isEqual,
+  isNil,
+  isError,
+  isRegExp,
+  isTypedArray,
 } from '../src/is'
 
 // ============================================================
@@ -778,5 +782,134 @@ describe('isBasicType', () => {
     expect(isBasicType(new String('hello'))).toBe(false)
     expect(isBasicType(new Number(42))).toBe(false)
     expect(isBasicType(new Boolean(true))).toBe(false)
+  })
+})
+
+// ============================================================
+// isObject (plain object semantics)
+// ============================================================
+describe('isObject plain object semantics', () => {
+  it('Date / Map / Set / 类实例返回 false', () => {
+    expect(isObject(new Date())).toBe(false)
+    expect(isObject(new Map())).toBe(false)
+    expect(isObject(new Set())).toBe(false)
+    expect(isObject(new (class Foo {})())).toBe(false)
+  })
+})
+
+// ============================================================
+// isNumber robustness
+// ============================================================
+describe('isNumber robustness', () => {
+  it('Symbol 不会抛错', () => {
+    expect(() => isNumber(Symbol('x'))).not.toThrow()
+    expect(isNumber(Symbol('x'))).toBe(false)
+  })
+
+  it('Number 包装对象返回 false', () => {
+    expect(isNumber(new Number(1))).toBe(false)
+  })
+})
+
+// ============================================================
+// isNil
+// ============================================================
+describe('isNil', () => {
+  it('null / undefined 返回 true', () => {
+    expect(isNil(null)).toBe(true)
+    expect(isNil(undefined)).toBe(true)
+  })
+
+  it('其他值返回 false', () => {
+    expect(isNil(0)).toBe(false)
+    expect(isNil('')).toBe(false)
+    expect(isNil(false)).toBe(false)
+  })
+})
+
+// ============================================================
+// isError
+// ============================================================
+describe('isError', () => {
+  it('Error 实例返回 true', () => {
+    expect(isError(new Error('x'))).toBe(true)
+    expect(isError(new TypeError('x'))).toBe(true)
+  })
+
+  it('普通对象与字符串返回 false', () => {
+    expect(isError({ message: 'x' })).toBe(false)
+    expect(isError('Error')).toBe(false)
+  })
+})
+
+// ============================================================
+// isRegExp
+// ============================================================
+describe('isRegExp', () => {
+  it('正则对象返回 true', () => {
+    expect(isRegExp(/a/)).toBe(true)
+    expect(isRegExp(new RegExp('a'))).toBe(true)
+  })
+
+  it('字符串与其他对象返回 false', () => {
+    expect(isRegExp('/a/')).toBe(false)
+    expect(isRegExp({})).toBe(false)
+  })
+})
+
+// ============================================================
+// isTypedArray
+// ============================================================
+describe('isTypedArray', () => {
+  it('TypedArray 返回 true', () => {
+    expect(isTypedArray(new Uint8Array([1]))).toBe(true)
+    expect(isTypedArray(new Float64Array([1]))).toBe(true)
+  })
+
+  it('DataView / 数组 / 普通对象返回 false', () => {
+    expect(isTypedArray(new DataView(new ArrayBuffer(8)))).toBe(false)
+    expect(isTypedArray([])).toBe(false)
+    expect(isTypedArray({})).toBe(false)
+  })
+})
+
+// ============================================================
+// isEqual enhancements
+// ============================================================
+describe('isEqual enhancements', () => {
+  it('处理循环引用', () => {
+    const a: any = { name: 'x' }
+    const b: any = { name: 'x' }
+    a.self = a
+    b.self = b
+    expect(isEqual(a, b)).toBe(true)
+  })
+
+  it('循环结构不一致时返回 false', () => {
+    const a: any = { name: 'x' }
+    const b: any = { name: 'y' }
+    a.self = a
+    b.self = b
+    expect(isEqual(a, b)).toBe(false)
+  })
+
+  it('比较 Map 的键值', () => {
+    expect(isEqual(new Map([['a', { n: 1 }]]), new Map([['a', { n: 1 }]]))).toBe(true)
+    expect(isEqual(new Map([['a', 1]]), new Map([['a', 2]]))).toBe(false)
+    expect(isEqual(new Map([['a', 1]]), new Map([['b', 1]]))).toBe(false)
+  })
+
+  it('比较 Set 的元素', () => {
+    expect(isEqual(new Set([1, 2]), new Set([2, 1]))).toBe(true)
+    expect(isEqual(new Set([1]), new Set([2]))).toBe(false)
+  })
+
+  it('比较 TypedArray 的字节内容', () => {
+    expect(isEqual(new Uint8Array([1, 2]), new Uint8Array([1, 2]))).toBe(true)
+    expect(isEqual(new Uint8Array([1, 2]), new Uint8Array([1, 3]))).toBe(false)
+  })
+
+  it('原型不同返回 false', () => {
+    expect(isEqual({}, Object.create(null))).toBe(false)
   })
 })
