@@ -24,7 +24,7 @@ Thumbs.db
 # Claude 工作目录
 .claude/settings.local.json
 .agents/
-.codebuddy
+.codebuddy/
 
 # 锁文件（npm 包不提交锁文件）
 pnpm-lock.yaml

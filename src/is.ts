@@ -64,13 +64,14 @@ export const isDate = (val: any): val is Date => {
 };
 
 /**
- * 判断是否为数字（含 `NaN` / `Infinity`，因为 `Number(x) === x` 对这些特殊值也成立）。
+ * 判断是否为数字（`Infinity` / `-Infinity` 视为数字；`NaN` 因 `NaN !== NaN` 返回 `false`）。
  * @param val - 任意值
  * @returns 类型谓词：为 `true` 时 `value` 被收窄为 `number`
  * @example
  * isNumber(1) // true
  * isNumber('1') // false
- * isNumber(NaN) // true
+ * isNumber(Infinity) // true
+ * isNumber(NaN) // false
  */
 export const isNumber = (val: any): val is number => {
   return Number(val) === val;
@@ -207,11 +208,14 @@ export const isHexColor = (str: string): boolean => {
 export const isIOS = (): boolean => /iPad|iPhone|iPod/.test(navigator.userAgent);
 
 /**
- * 判断是否为合法的邮箱地址（宽松校验）。
+ * 判断是否为合法的邮箱地址（宽松校验：允许 `+`、点号等常见字符，仅要求含 `@` 与带点的域名）。
  * @param email - 待校验的邮箱字符串
  * @returns 合法返回 `true`
+ * @remarks 与 `isEmail` 的差异：本函数只做粗筛，`user+tag@example.com` 可通过；需要限制本地部分字符集时改用 `isEmail`。
  * @example
  * isValidEmail('a@b.com') // true
+ * isValidEmail('user+tag@example.com') // true
+ * @see isEmail
  */
 export const isValidEmail = (email: string): boolean => {
   return /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/.test(email);
@@ -280,26 +284,29 @@ export const isPrimitive = (value: any): boolean => {
 };
 
 /**
- * 判断是否为基本类型（同 `isPrimitive` 的另一种实现，使用装箱比较）。
+ * 判断是否为基本类型。`isPrimitive` 的别名，二者行为完全一致（保留导出仅为兼容）。
  * @param val - 任意值
  * @returns 类型谓词：为 `true` 时 `value` 被收窄为基本类型
  * @example
  * isBasicType(1) // true
  * isBasicType([]) // false
+ * @see isPrimitive
  */
 export const isBasicType = (val: any): val is string | number | boolean | symbol | bigint | null | undefined => {
-  return !val || Object(val) !== val
+  return isPrimitive(val)
 };
 
 /**
  * 判断值是否为“空”：`null` / `undefined` / 空字符串 / 空数组 / 空对象 / 空 `Map` / 空 `Set` / 无效日期，以及长度为 0 的可枚举对象。
  * @param value - 任意值
  * @returns 视为空返回 `true`
+ * @remarks 与 `isEmptySv` 的差异：本函数对数字、函数、`Symbol` 一律返回 `false`，并按有效性判断 `Date`；`isEmptySv` 不特判 `Date`（任何 `Date` 都视为空），但能正确处理 `DataView` 等没有 `length` 的 `ArrayBuffer` 视图。
  * @example
  * isEmpty('') // true
  * isEmpty([]) // true
  * isEmpty({}) // true
  * isEmpty({a:1}) // false
+ * @see isEmptySv
  */
 export const isEmpty = (value: any): boolean => {
   if (value === null || value === undefined) return true;
@@ -318,10 +325,12 @@ export const isEmpty = (value: any): boolean => {
  * 判断值是否为“空”（简化版，仅覆盖字符串 / 数组 / `Map` / `Set` / `ArrayBuffer` 视图 / 普通对象）。
  * @param value - 字符串、对象、`null` 或 `undefined`
  * @returns 视为空返回 `true`
+ * @remarks 与 `isEmpty` 的差异：不特判 `Date`（任何 `Date` 都没有可枚举自有属性，会被判为空），但支持 `DataView` 等 `ArrayBuffer` 视图。
  * @example
  * isEmptySv('') // true
  * isEmptySv([]) // true
  * isEmptySv({}) // true
+ * @see isEmpty
  */
 export function isEmptySv(value: string | object | null | undefined): boolean {
   if (value === null || value === undefined) return true;

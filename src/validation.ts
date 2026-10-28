@@ -17,12 +17,15 @@ export const checkCardNo = (value: string): boolean => {
 }
 
 /**
- * 校验是否为合法的邮箱地址。
+ * 校验是否为合法的邮箱地址（严格版：本地部分仅允许字母、数字、下划线与短横线，不支持 `+` 和点号；域名须含至少一个点）。
  * @param value - 待校验的邮箱字符串
  * @returns 合法返回 `true`
+ * @remarks 需要兼容 `user+tag@example.com`、`user.name@example.com` 等常见格式时，改用 `isValidEmail`。
  * @example
  * isEmail('user@example.com') // true
+ * isEmail('user+tag@example.com') // false（`+` 不被接受）
  * isEmail('invalid') // false
+ * @see isValidEmail
  */
 export const isEmail = (value: string): boolean => {
   return /^[\w-]+@[\w-]+(\.[\w-]+)+$/.test(value)
@@ -35,8 +38,9 @@ export const isEmail = (value: string): boolean => {
  * @example
  * isTel('13812345678') // true
  * isTel(13812345678) // true
+ * isTel('1,234567890') // false（第二位必须是数字 3-9）
  * isTel('12345') // false
  */
 export const isTel = (value: string | number): boolean => {
-  return /^1[3-9,]\d{9}$/.test(value.toString())
+  return /^1[3-9]\d{9}$/.test(value.toString())
 }

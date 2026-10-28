@@ -15,13 +15,14 @@
 export const unique = <T>(arr: T[]): T[] => [...new Set(arr)]
 
 /**
- * 对象数组按指定属性（key）去重，保留首次出现的元素。
+ * 对象数组按指定属性（key）去重；键相同时**后出现的元素覆盖先出现的元素**。
  * @template T - 对象元素的类型（需为可索引的普通对象）
  * @param arr - 待去重的对象数组
  * @param key - 用作去重依据的属性名
  * @returns 按 `key` 去重后的新数组
  * @example
- * uniqueByKey([{id:1},{id:1},{id:2}], 'id') // [{id:1},{id:2}]
+ * uniqueByKey([{id:1,name:'a'},{id:1,name:'b'},{id:2,name:'c'}], 'id')
+ * // [{id:1,name:'b'},{id:2,name:'c'}]（同名键保留最后一次出现）
  */
 export const uniqueByKey = <T extends Record<string, any>>(
   arr: T[],

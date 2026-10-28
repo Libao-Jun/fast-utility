@@ -80,7 +80,7 @@ search.cancel();
 | `isWindow(v)` | 是否 `window` 对象 | `isWindow(window)` → `true` |
 | `isElement(v)` | 是否 DOM 元素 | `isElement(document.body)` → `true` |
 
-> `isPrimitive` 与 `isBasicType`、`isEmpty` 与 `isEmptySv`、`isEmail`（校验组）与 `isValidEmail` 三组行为接近，选用其一即可。
+> `isBasicType` 是 `isPrimitive` 的别名（行为一致）；`isEmpty` 与 `isEmptySv` 对 `Date`、`DataView` 的处理不同；`isEmail` 比 `isValidEmail` 严格（不接受 `+` 与本地部分的点号）。
 
 ### 时间与日期
 

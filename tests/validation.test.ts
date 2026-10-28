@@ -115,6 +115,10 @@ describe('isTel', () => {
     expect(isTel('12012345678')).toBe(false)
   })
 
+  it('第二位为逗号等非法字符返回 false', () => {
+    expect(isTel('1,234567890')).toBe(false)
+  })
+
   it('10 位号码返回 false', () => {
     expect(isTel('1381234567')).toBe(false)
   })

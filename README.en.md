@@ -80,7 +80,7 @@ Most of the `is*` family are type guards (`v is T`) and can be used directly for
 | `isWindow(v)` | Whether the value is the `window` object | `isWindow(window)` → `true` |
 | `isElement(v)` | Whether the value is a DOM element | `isElement(document.body)` → `true` |
 
-> `isPrimitive` / `isBasicType`, `isEmpty` / `isEmptySv`, and `isEmail` (validation group) / `isValidEmail` behave similarly — pick one from each pair.
+> `isBasicType` is an alias of `isPrimitive` (identical behaviour); `isEmpty` and `isEmptySv` differ on `Date` and `DataView`; `isEmail` is stricter than `isValidEmail` (no `+` or dots in the local part).
 
 ### Date & time
 
