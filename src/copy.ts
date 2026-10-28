@@ -9,10 +9,6 @@
  * @param obj - 待深拷贝的源对象/值
  * @param hash - 内部使用的缓存表（`WeakMap`），用于正确处理循环引用；一般无需传入
  * @returns 与源结构完全一致的全新拷贝
- * @example
- * const a = { d: new Date(), m: new Map([['k', 1]]) }
- * const b = deepClone(a)
- * b === a // false（完全独立）
  * @remarks 函数、DOM 节点等无法被结构化拷贝的内容会按引用/浅层方式保留。
  */
 export function deepClone<T>(obj: T, hash = new WeakMap<any, any>()): T {
@@ -54,8 +50,6 @@ export function deepClone<T>(obj: T, hash = new WeakMap<any, any>()): T {
  * @template T - 被拷贝值的类型
  * @param obj - 待拷贝的值（仅支持 JSON 安全类型：`Object` / `Array` / `string` / `number` / `boolean` / `null`）
  * @returns 深拷贝结果
- * @example
- * const b = deepCloneWithJSON({ a: 1, b: [2, 3] })
  * @remarks 会丢失 `Date` / `Map` / `Set` / `function` / `undefined` 等类型（如 `Date` 会变成字符串）。
  */
 export const deepCloneWithJSON = <T>(obj: T): T => JSON.parse(JSON.stringify(obj))
@@ -66,8 +60,6 @@ export const deepCloneWithJSON = <T>(obj: T): T => JSON.parse(JSON.stringify(obj
  * @param obj - 待拷贝的值（不支持函数、`Symbol`、`DOM` 节点等）
  * @param options - 可选的 `StructuredSerializeOptions`（如 `{ transfer: [...] }`）
  * @returns 深拷贝结果
- * @example
- * const b = structClone({ a: 1, nested: { b: 2 } })
  * @remarks 环境需支持 `structuredClone`（现代浏览器 / Node 17+）。
  */
 export const structClone = <T>(obj: T, options?: StructuredSerializeOptions): T => structuredClone(obj, options)
@@ -77,10 +69,6 @@ export const structClone = <T>(obj: T, options?: StructuredSerializeOptions): T 
  * @template T - 被拷贝值的类型
  * @param obj - 待拷贝的数组或对象（其他类型按原值返回）
  * @returns 拷贝后的新值（数组用展开符、对象用 `{...}`）
- * @example
- * const src = { a: 1, nested: { b: 2 } }
- * const c = shallowClone(src)
- * c.nested === src.nested // true（共享引用）
  */
 export const shallowClone = <T>(obj: T): T => {
   if (obj === null || typeof obj !== "object") return obj

@@ -12,11 +12,6 @@
  * @param options.leading - 是否在首次触发时立即执行一次，默认 `false`
  * @param options.trailing - 是否在等待结束后执行（尾随调用），默认 `true`
  * @returns 带 `cancel` 方法的防抖函数；调用 `cancel()` 可取消尚未执行的调用
- * @example
- * const onResize = debounce(() => console.log('resized'), 200)
- * window.addEventListener('resize', onResize)
- * // 连续 resize 只会在停止 200ms 后打印一次
- * onResize.cancel() // 取消待执行
  */
 export const debounce = <T extends (...args: any[]) => any>(
   fn: T,
@@ -60,11 +55,6 @@ export const debounce = <T extends (...args: any[]) => any>(
  * @param options.leading - 是否在时间窗口开始时立即执行，默认 `true`
  * @param options.trailing - 是否在时间窗口结束后补一次调用，默认 `true`
  * @returns 带 `cancel` 方法的节流函数；调用 `cancel()` 可取消尚未执行的尾随调用
- * @example
- * const onScroll = throttle(() => console.log('scroll'), 100)
- * window.addEventListener('scroll', onScroll)
- * // 滚动期间每 100ms 最多打印一次
- * onScroll.cancel()
  */
 export const throttle = <T extends (...args: any[]) => any>(
   fn: T,

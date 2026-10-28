@@ -8,9 +8,6 @@
  * @template T - 数组元素的类型
  * @param arr - 待去重的数组
  * @returns 去重后的新数组（不会修改原数组）
- * @example
- * unique([1, 1, 2, 3, 3]) // [1, 2, 3]
- * unique(['a', 'b', 'a']) // ['a', 'b']
  */
 export const unique = <T>(arr: T[]): T[] => [...new Set(arr)]
 
@@ -20,9 +17,6 @@ export const unique = <T>(arr: T[]): T[] => [...new Set(arr)]
  * @param arr - 待去重的对象数组
  * @param key - 用作去重依据的属性名
  * @returns 按 `key` 去重后的新数组
- * @example
- * uniqueByKey([{id:1,name:'a'},{id:1,name:'b'},{id:2,name:'c'}], 'id')
- * // [{id:1,name:'b'},{id:2,name:'c'}]（同名键保留最后一次出现）
  */
 export const uniqueByKey = <T extends Record<string, any>>(
   arr: T[],
@@ -33,8 +27,6 @@ export const uniqueByKey = <T extends Record<string, any>>(
  * 数值数组升序排序（不会改变原数组）。
  * @param arr - 待排序的数值数组
  * @returns 升序排列的新数组
- * @example
- * sortNumAsc([3, 1, 2]) // [1, 2, 3]
  */
 export const sortNumAsc = (arr: number[]): number[] => [...arr].sort((a, b) => a - b)
 
@@ -42,8 +34,6 @@ export const sortNumAsc = (arr: number[]): number[] => [...arr].sort((a, b) => a
  * 数值数组降序排序（不会改变原数组）。
  * @param arr - 待排序的数值数组
  * @returns 降序排列的新数组
- * @example
- * sortNumDesc([3, 1, 2]) // [3, 2, 1]
  */
 export const sortNumDesc = (arr: number[]): number[] => [...arr].sort((a, b) => b - a)
 
@@ -54,9 +44,6 @@ export const sortNumDesc = (arr: number[]): number[] => [...arr].sort((a, b) => 
  * @param key - 用于排序的数值属性名
  * @param order - 排序方向，默认 `"asc"`（升序），可选 `"desc"`（降序）
  * @returns 排序后的新数组（不会修改原数组）
- * @example
- * sortByKey([{n:3},{n:1}], 'n') // [{n:1},{n:3}]
- * sortByKey([{n:3},{n:1}], 'n', 'desc') // [{n:3},{n:1}]
  */
 export const sortByKey = <T extends Record<string, any>>(
   arr: T[],
@@ -72,8 +59,6 @@ export const sortByKey = <T extends Record<string, any>>(
  * @template T - 元素类型
  * @param arrayLike - 类数组或可迭代对象（如 `arguments`、`NodeList`、`Set` 等）
  * @returns 转换后的数组
- * @example
- * toArray(document.querySelectorAll('div')) // HTMLDivElement[]
  */
 export const toArray = <T>(arrayLike: ArrayLike<T>): T[] => Array.from(arrayLike)
 
@@ -82,8 +67,6 @@ export const toArray = <T>(arrayLike: ArrayLike<T>): T[] => Array.from(arrayLike
  * @template T - 各数组的元素类型
  * @param arrays - 任意数量的待合并数组
  * @returns 合并后的新数组
- * @example
- * mergeArrays([1, 2], [3, 4]) // [1, 2, 3, 4]
  */
 export const mergeArrays = <T>(...arrays: T[][]): T[] => arrays.flat()
 
@@ -93,9 +76,6 @@ export const mergeArrays = <T>(...arrays: T[][]): T[] => arrays.flat()
  * @param arr - 待扁平化的（可能多维的）数组
  * @param depth - 扁平化深度，默认 `1`（只展开一层）
  * @returns 扁平化后的新数组
- * @example
- * flatten([1, [2, [3]]], 1) // [1, 2, [3]]
- * flatten([1, [2, [3]]], 2) // [1, 2, 3]
  */
 export const flatten = <T>(arr: any[], depth: number = 1): T[] => arr.flat(depth)
 
@@ -106,8 +86,6 @@ export const flatten = <T>(arr: any[], depth: number = 1): T[] => arr.flat(depth
  * @param key - 用于匹配的 property 名
  * @param value - 目标值
  * @returns 第一个匹配的元素，未找到时返回 `undefined`
- * @example
- * arrFind([{id:1},{id:2}], 'id', 2) // {id:2}
  */
 export const arrFind = <T extends Record<string, any>>(
   arr: T[],
@@ -121,9 +99,6 @@ export const arrFind = <T extends Record<string, any>>(
  * @param arr - 待分组的对象数组
  * @param key - 分组依据的属性名
  * @returns 以属性值（转为字符串）为键、对应元素数组为值的分组对象
- * @example
- * groupBy([{type:'a'},{type:'b'},{type:'a'}], 'type')
- * // { a: [{type:'a'},{type:'a'}], b: [{type:'b'}] }
  */
 export const groupBy = <T extends Record<string, any>>(
   arr: T[],
@@ -144,8 +119,6 @@ export const groupBy = <T extends Record<string, any>>(
  * @template T - 输入对象的类型
  * @param obj - 待清理的对象
  * @returns 仅包含非空属性的新对象（原对象不会被修改）
- * @example
- * filterEmptyValues({a:1, b:null, c:'', d:undefined}) // {a:1}
  */
 export const filterEmptyValues = <T extends Record<string, any>>(
   obj: T,
@@ -161,10 +134,6 @@ export const filterEmptyValues = <T extends Record<string, any>>(
  * @param length - 数组长度（非负整数）
  * @param mapFn - 可选的映射函数，接收索引 `index`，返回对应元素；省略时返回索引本身
  * @returns 生成的数组
- * @example
- * createRange(3) // [0, 1, 2]
- * createRange(3, i => i * 2) // [0, 2, 4]
- * createRange(2, i => `no${i}`) // ['no0', 'no1']
  */
 export const createRange = <T = number>(
   length: number,
