@@ -1,6 +1,6 @@
 {
   "name": "fast-utility",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "轻量、高效的 JS / TS 工具函数库，零依赖、Tree-shaking 友好，浏览器与 Node 通用。",
   "type": "module",
   "main": "dist/index.cjs",
