@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { once, memoize, pipe, compose, partial, attempt } from '../src/function'
+import { once, memoize, pipe, compose, partial, attempt, chain, guard } from '../src/function'
 
 // ============================================================
 // once
@@ -145,5 +145,79 @@ describe('attempt', () => {
     })
     expect(error).toBeInstanceOf(Error)
     expect(error?.message).toBe('oops')
+  })
+})
+
+// ============================================================
+// attempt (async & args)
+// ============================================================
+describe('attempt async & args', () => {
+  it('异步成功返回 [undefined, 结果]', async () => {
+    await expect(attempt(async () => 42)).resolves.toEqual([undefined, 42])
+  })
+
+  it('异步失败返回 [Error, undefined]', async () => {
+    const [error, value] = await attempt(async () => {
+      throw new Error('boom')
+    })
+    expect(error).toBeInstanceOf(Error)
+    expect(error?.message).toBe('boom')
+    expect(value).toBeUndefined()
+  })
+
+  it('透传参数', () => {
+    expect(attempt((a: number, b: number) => a + b, 1, 2)).toEqual([undefined, 3])
+  })
+})
+
+// ============================================================
+// chain
+// ============================================================
+describe('chain', () => {
+  it('第一个函数接收全部初始参数', () => {
+    const fn = chain((a: number, b: number) => a + b, (sum) => sum * 2)
+    expect(fn(1, 2)).toBe(6)
+  })
+
+  it('支持三步与四步串联', () => {
+    expect(chain((a: number) => a + 1, (value) => value * 2, (value) => String(value))(3)).toBe('8')
+    expect(chain(
+      (a: number) => a + 1,
+      (value) => value * 2,
+      (value) => String(value),
+      (value) => `#${value}`,
+    )(3)).toBe('#8')
+  })
+
+  it('无函数时抛出 TypeError', () => {
+    expect(() => (chain as any)()).toThrow(TypeError)
+  })
+})
+
+// ============================================================
+// guard
+// ============================================================
+describe('guard', () => {
+  it('成功时返回结果', () => {
+    expect(guard(() => 42)).toBe(42)
+  })
+
+  it('同步异常返回 undefined', () => {
+    expect(guard(() => {
+      throw new Error('x')
+    })).toBeUndefined()
+  })
+
+  it('shouldGuard 返回 false 时重新抛出', () => {
+    expect(() => guard(() => {
+      throw new Error('x')
+    }, () => false)).toThrow('x')
+  })
+
+  it('异步成功与失败', async () => {
+    await expect(guard(async () => 1)).resolves.toBe(1)
+    await expect(guard(async () => {
+      throw new Error('x')
+    })).resolves.toBeUndefined()
   })
 })

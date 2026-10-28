@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { pick, omit, mapValues, mapKeys, invert, merge, get, has } from '../src/object'
+import { pick, omit, mapValues, mapKeys, invert, merge, get, has, set, crush, construct, mapEntries } from '../src/object'
 
 // ============================================================
 // pick
@@ -175,5 +175,104 @@ describe('has', () => {
   it('支持数组索引路径', () => {
     expect(has({ list: [1] }, 'list[0]')).toBe(true)
     expect(has({ list: [] }, 'list[0]')).toBe(false)
+  })
+})
+
+// ============================================================
+// set
+// ============================================================
+describe('set', () => {
+  it('按路径写入并返回新对象', () => {
+    const source = { a: { b: 1 } }
+    const result = set(source, 'a.c', 2)
+    expect(result).toEqual({ a: { b: 1, c: 2 } })
+    expect(source).toEqual({ a: { b: 1 } })
+  })
+
+  it('缺失层级自动创建，数字段创建数组', () => {
+    expect(set({}, 'list[0].name', 'x')).toEqual({ list: [{ name: 'x' }] })
+  })
+
+  it('修改嵌套数组元素不修改原数组', () => {
+    const source = { list: [{ n: 1 }, { n: 2 }] }
+    const result = set(source, 'list[1].n', 9)
+    expect(result).toEqual({ list: [{ n: 1 }, { n: 9 }] })
+    expect(source.list[1].n).toBe(2)
+  })
+
+  it('未修改的兄弟节点保持引用', () => {
+    const shared = { x: 1 }
+    const source = { a: shared, b: 1 }
+    expect(set(source, 'b', 2).a).toBe(shared)
+  })
+
+  it('空路径返回原对象', () => {
+    const source = { a: 1 }
+    expect(set(source, '', 2)).toBe(source)
+  })
+
+  it('危险路径抛出 TypeError', () => {
+    expect(() => set({}, '__proto__.polluted', true)).toThrow(TypeError)
+    expect(() => set({}, 'constructor.prototype.x', true)).toThrow(TypeError)
+  })
+})
+
+// ============================================================
+// crush
+// ============================================================
+describe('crush', () => {
+  it('将嵌套对象压平为路径键', () => {
+    expect(crush({ a: { b: 1 }, list: [{ c: 2 }], empty: {} })).toEqual({
+      'a.b': 1,
+      'list.0.c': 2,
+      empty: {},
+    })
+  })
+
+  it('支持自定义分隔符', () => {
+    expect(crush({ a: { b: 1 } }, '/')).toEqual({ 'a/b': 1 })
+  })
+
+  it('空对象返回空对象', () => {
+    expect(crush({})).toEqual({})
+  })
+})
+
+// ============================================================
+// construct
+// ============================================================
+describe('construct', () => {
+  it('将路径键还原为嵌套结构', () => {
+    expect(construct({ 'a.b': 1, 'list.0.c': 2 })).toEqual({
+      a: { b: 1 },
+      list: [{ c: 2 }],
+    })
+  })
+
+  it('与 crush 互为逆操作', () => {
+    const source = { a: { b: 1 }, list: [{ c: 2 }, { d: 3 }] }
+    expect(construct(crush(source))).toEqual(source)
+  })
+
+  it('跳过危险路径', () => {
+    expect(construct({ '__proto__.polluted': true })).toEqual({})
+  })
+})
+
+// ============================================================
+// mapEntries
+// ============================================================
+describe('mapEntries', () => {
+  it('同时映射键与值', () => {
+    expect(mapEntries({ a: 1, b: 2 }, (key, value) => [String(key).toUpperCase(), value * 2]))
+      .toEqual({ A: 2, B: 4 })
+  })
+
+  it('键冲突时后者覆盖前者', () => {
+    expect(mapEntries({ a: 1, b: 2 }, () => ['same', 0])).toEqual({ same: 0 })
+  })
+
+  it('空对象返回空对象', () => {
+    expect(mapEntries({}, () => ['k', 'v'])).toEqual({})
   })
 })

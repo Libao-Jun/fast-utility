@@ -160,6 +160,15 @@ export const kebabCase = (str: string): string =>
   words(str).map((word) => word.toLowerCase()).join('-')
 
 /**
+ * 转换为标题式命名（每个单词首字母大写、空格分隔）。
+ * @param str - 原始字符串
+ * @returns 标题式字符串；无单词时返回空字符串
+ * @remarks 仅识别 ASCII 单词，camelCase 会被拆分为多个单词。
+ */
+export const titleCase = (str: string): string =>
+  words(str).map(capitalizeWord).join(' ')
+
+/**
  * 去除拉丁字符上的变音符号（如 `café` → `cafe`）。
  * @param str - 原始字符串
  * @returns 去除组合附加符号后的字符串
@@ -175,3 +184,22 @@ export const deburr = (str: string): string =>
  */
 export const escapeRegExp = (str: string): string =>
   str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+/**
+ * 按占位符替换模板中的变量。
+ * @param str - 模板字符串
+ * @param data - 变量表
+ * @param pattern - 匹配模式，默认匹配 `{{key}}`；需包含一个捕获组并带 `g` 标志
+ * @returns 替换后的字符串
+ * @remarks 变量缺失或为 `null` / `undefined` 时替换为空字符串；自定义模式缺少 `g` 标志时只会替换首个匹配。
+ */
+export const template = (
+  str: string,
+  data: Record<string, unknown>,
+  pattern: RegExp = /\{\{\s*([\w.$-]+)\s*\}\}/g,
+): string => {
+  return str.replace(pattern, (_match: string, key: string) => {
+    const value = data[key]
+    return value === undefined || value === null ? '' : String(value)
+  })
+}

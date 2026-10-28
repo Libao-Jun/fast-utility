@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { randomString, uuid, escapeHtml, unescapeHtml, stripHtml, ensurePrefix, ensureSuffix, removePrefix, removeSuffix, byteSize, maskName, words, camelCase, pascalCase, snakeCase, kebabCase, deburr, escapeRegExp } from '../src/string'
+import { randomString, uuid, escapeHtml, unescapeHtml, stripHtml, ensurePrefix, ensureSuffix, removePrefix, removeSuffix, byteSize, maskName, words, camelCase, pascalCase, snakeCase, kebabCase, deburr, escapeRegExp, template, titleCase } from '../src/string'
 
 // ============================================================
 // randomString
@@ -414,5 +414,52 @@ describe('escapeRegExp', () => {
     const pattern = new RegExp(escapeRegExp('a.b*c'))
     expect(pattern.test('a.b*c')).toBe(true)
     expect(pattern.test('axbbc')).toBe(false)
+  })
+})
+
+// ============================================================
+// template
+// ============================================================
+describe('template', () => {
+  it('替换默认 {{key}} 占位符', () => {
+    expect(template('Hello, {{name}}!', { name: 'Ray' })).toBe('Hello, Ray!')
+  })
+
+  it('支持占位符内空白', () => {
+    expect(template('{{ name }}', { name: 'Ray' })).toBe('Ray')
+  })
+
+  it('缺失或空值替换为空字符串', () => {
+    expect(template('a{{missing}}b', {})).toBe('ab')
+    expect(template('a{{value}}b', { value: null })).toBe('ab')
+  })
+
+  it('数值与布尔值转为字符串', () => {
+    expect(template('{{n}}-{{b}}', { n: 1, b: false })).toBe('1-false')
+  })
+
+  it('支持自定义模式', () => {
+    expect(template('Hello, <name>', { name: 'Ray' }, /<(.+?)>/g)).toBe('Hello, Ray')
+  })
+})
+
+// ============================================================
+// titleCase
+// ============================================================
+describe('titleCase', () => {
+  it('按空格分隔并大写每个单词首字母', () => {
+    expect(titleCase('foo_bar baz-qux')).toBe('Foo Bar Baz Qux')
+  })
+
+  it('拆分 camelCase', () => {
+    expect(titleCase('fooBarBaz')).toBe('Foo Bar Baz')
+  })
+
+  it('统一其余字母为小写', () => {
+    expect(titleCase('FOO BAR')).toBe('Foo Bar')
+  })
+
+  it('空字符串返回空字符串', () => {
+    expect(titleCase('')).toBe('')
   })
 })

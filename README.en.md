@@ -4,7 +4,7 @@
 
 English | [简体中文](./README.md)
 
-fast-utility gathers the helpers you keep rewriting into one place: type checks, date & time, number and currency formatting, string manipulation, array and object operations, deep cloning, storage and cookies, browser helpers, debounce/throttle, math and validators — 159 functions in total. Every function is imported by name from the package root, so you only ship what you use.
+fast-utility gathers the helpers you keep rewriting into one place: type checks, date & time, number and currency formatting, string manipulation, array and object operations, deep cloning, storage and cookies, browser helpers, debounce/throttle, async control, math and validators — 178 functions in total. Every function is imported by name from the package root, so you only ship what you use.
 
 - **Zero runtime dependencies**: the install size is just this library.
 - **Tree-shaking friendly**: each function is exported independently; unused ones never reach your bundle.
@@ -46,7 +46,7 @@ search.cancel();
 
 ## API
 
-11 groups by purpose. Groups marked "browser only" rely on `window` / `document` / `localStorage` / `navigator` and will throw in Node.
+12 groups by purpose. Groups marked "browser only" rely on `window` / `document` / `localStorage` / `navigator` and will throw in Node.
 
 ### Type checks
 
@@ -139,20 +139,22 @@ Most of the `is*` family are type guards (`v is T`) and can be used directly for
 | `kebabCase(s)` | Convert to kebab-case | `kebabCase("fooBar")` → `"foo-bar"` |
 | `deburr(s)` | Remove Latin diacritics | `deburr("café")` → `"cafe"` |
 | `escapeRegExp(s)` | Escape regex metacharacters | `escapeRegExp("a.b")` → `"a\\.b"` |
+| `template(s, data, pattern?)` | Replace `{{key}}` placeholders with values | `template("Hi {{name}}", { name: "Ray" })` → `"Hi Ray"` |
+| `titleCase(s)` | Convert to Title Case (space-separated, capitalized) | `titleCase("fooBar baz")` → `"Foo Bar Baz"` |
 
 ### Arrays
 
 | Function | Description | Example |
 | --- | --- | --- |
-| `unique(arr)` | Deduplicate by SameValueZero (`NaN` treated as equal) | `unique([1, 2, 2])` → `[1, 2]` |
-| `uniqueByKey(arr, key)` | Deduplicate an object array by key; **keeps the last occurrence** | `uniqueByKey([{ id: 1, n: "a" }, { id: 1, n: "b" }], "id")` → `[{ id: 1, n: "b" }]` |
+| `unique(arr, identity?)` | Deduplicate; optional identity keeps the first occurrence per value | `unique([1, 2, 2])` → `[1, 2]` |
+| `uniqueByKey(arr, key)` | Deduplicate an object array by key; **keeps the first occurrence** | `uniqueByKey([{ id: 1, n: "a" }, { id: 1, n: "b" }], "id")` → `[{ id: 1, n: "a" }]` |
 | `sortNumAsc(arr)` / `sortNumDesc(arr)` | Numeric ascending / descending; returns a new array | `sortNumAsc([3, 1, 2])` → `[1, 2, 3]` |
 | `sortByKey(arr, key, order = "asc")` | Sort by a numeric property; returns a new array | `sortByKey([{ n: 3 }, { n: 1 }], "n")` → `[{ n: 1 }, { n: 3 }]` |
 | `toArray(x)` | Convert an array-like / iterable to an array | `toArray("abc")` → `["a", "b", "c"]` |
 | `mergeArrays(...arrs)` | Merge multiple arrays | `mergeArrays([1], [2, 3])` → `[1, 2, 3]` |
 | `flatten(arr, depth = 1)` | Flatten to the given depth | `flatten([1, [2, [3]]], 2)` → `[1, 2, 3]` |
 | `arrFind(arr, key, value)` | Find the first match; `undefined` if absent | `arrFind([{ id: 2 }], "id", 2)` → `{ id: 2 }` |
-| `groupBy(arr, key)` | Group by a property | `groupBy([{ t: "a" }, { t: "b" }], "t")` → `{ a: [...], b: [...] }` |
+| `groupBy(arr, keyOrFn)` | Group by a property or iteratee | `groupBy([{ t: "a" }, { t: "b" }], "t")` → `{ a: [...], b: [...] }` |
 | `createRange(len, mapFn?)` | Build a sequence; optional mapping function | `createRange(3)` → `[0, 1, 2]` |
 | `chunk(arr, size)` | Split into fixed-size chunks | `chunk([1, 2, 3], 2)` → `[[1, 2], [3]]` |
 | `compact(arr)` | Remove falsy values | `compact([0, 1, "", 2])` → `[1, 2]` |
@@ -171,6 +173,14 @@ Most of the `is*` family are type guards (`v is T`) and can be used directly for
 | `keyBy(arr, keyOrFn)` | Index elements by property or function | `keyBy([{ id: 1 }], "id")` → `{ "1": { id: 1 } }` |
 | `maxBy(arr, fn)` / `minBy(arr, fn)` | Element with the max / min numeric value | `maxBy([{ n: 1 }, { n: 2 }], o => o.n)` → `{ n: 2 }` |
 | `sortBy(arr, fn)` | Ascending sort by iteratee; returns a new array | `sortBy([3, 1], n => n)` → `[1, 3]` |
+| `replace(arr, newItem, match)` | Replace the first match; returns a new array | `replace([1, 2], 9, n => n === 2)` → `[1, 9]` |
+| `replaceOrAppend(arr, newItem, match)` | Replace the first match, or append when absent | `replaceOrAppend([1], 9, n => n === 2)` → `[1, 9]` |
+| `toggle(arr, item, force?)` | Toggle membership; `force` can force keep / remove | `toggle([1, 2], 1)` → `[2]` |
+| `zipToObject(keys, values)` | Build an object from keys and a value source | `zipToObject(["a", "b"], [1, 2])` → `{ a: 1, b: 2 }` |
+| `rotate(arr, steps = 1)` | Rotate right for positive steps, left for negative | `rotate([1, 2, 3], 1)` → `[3, 1, 2]` |
+| `intersects(a, b)` | Whether the two arrays share any element | `intersects([1, 2], [2, 3])` → `true` |
+| `objectify(arr, getKey, getValue?)` | Project an array into an object via key/value selectors | `objectify([{ id: 1 }], o => o.id)` → `{ 1: { id: 1 } }` |
+| `select(arr, mapper, predicate)` | Filter and map in a single pass | `select([1, 2, 3], n => n * n, n => n > 1)` → `[4, 9]` |
 
 ### Objects & cloning
 
@@ -190,6 +200,10 @@ Most of the `is*` family are type guards (`v is T`) and can be used directly for
 | `merge(target, ...sources)` | Deep-merge plain objects into a new object | `merge({ a: { b: 1 } }, { a: { c: 2 } })` → `{ a: { b: 1, c: 2 } }` |
 | `get(obj, path, default?)` | Read by path, supporting `a[0].b` | `get({ a: { b: 1 } }, "a.b")` → `1` |
 | `has(obj, path)` | Whether the path exists | `has({ a: { b: 1 } }, "a.b")` → `true` |
+| `set(obj, path, value)` | Write by path; returns a new object (only path nodes copied) | `set({ a: 1 }, "b.c", 2)` → `{ a: 1, b: { c: 2 } }` |
+| `crush(obj, sep = ".")` | Flatten a nested object into path keys | `crush({ a: { b: 1 } })` → `{ "a.b": 1 }` |
+| `construct(obj, sep = ".")` | Rebuild a nested object from path keys | `construct({ "a.b": 1 })` → `{ a: { b: 1 } }` |
+| `mapEntries(obj, fn)` | Map keys and values at once | `mapEntries({ a: 1 }, (k, v) => [k.toUpperCase(), v])` → `{ A: 1 }` |
 
 ### Storage & cookies (browser only)
 
@@ -222,12 +236,22 @@ Most of the `is*` family are type guards (`v is T`) and can be used directly for
 | --- | --- | --- |
 | `debounce(fn, delay = 300, opts?)` | Runs `delay` ms after the last call; `leading` defaults to `false`, `trailing` to `true`; returns a function with `cancel()` | `debounce(save, 500)` |
 | `throttle(fn, interval = 300, opts?)` | At most one call per interval; `leading` / `trailing` both default to `true`; returns a function with `cancel()` | `throttle(onScroll, 200)` |
+
+### Async
+
+| Function | Description | Example |
+| --- | --- | --- |
+| `sleep(ms)` | Resolve after the given milliseconds | `await sleep(100)` |
+| `retry(fn, opts?)` | Retry on failure with attempts and delay; `times` defaults to 3 | `await retry(load, { times: 3 })` |
+| `parallel(items, fn, limit?)` | Run async mapping with a concurrency limit, preserving input order | `await parallel(list, load, 4)` |
 | `once(fn)` | Run at most once and cache the result | `const init = once(setup)` |
 | `memoize(fn, resolver?)` | Cache results by first argument; custom key supported | `const f = memoize(slowFn)` |
 | `pipe(...fns)` | Compose left to right | `pipe(f, g)(x)` → `g(f(x))` |
 | `compose(...fns)` | Compose right to left | `compose(f, g)(x)` → `f(g(x))` |
 | `partial(fn, ...args)` | Preset leading arguments | `partial(add, 1)(2)` → `3` |
-| `attempt(fn)` | Catch errors and return `[error, value]` | `attempt(() => 1)` → `[undefined, 1]` |
+| `attempt(fn, ...args)` | Catch sync / async errors; returns `[error, value]` | `attempt(() => 1)` → `[undefined, 1]` |
+| `chain(...fns)` | Chain functions left to right; the first may take multiple args | `chain((a, b) => a + b, n => n * 2)(1, 2)` → `6` |
+| `guard(fn, shouldGuard?)` | Swallow errors and return `undefined`; optional rethrow predicate | `guard(jsonParse)` → result or `undefined` |
 
 ### Math
 
@@ -237,8 +261,8 @@ Most of the `is*` family are type guards (`v is T`) and can be used directly for
 | `randomInt(min, max)` | Random integer in a closed interval (inclusive) | `randomInt(1, 6)` → `1`–`6` |
 | `randomFloat(min, max)` | Random float in a half-open interval | `randomFloat(0, 1)` → `0.374...` |
 | `round(v, decimals = 0)` | Round to the given number of decimals | `round(3.14159, 2)` → `3.14` |
-| `sum(arr)` | Sum an array; `0` for an empty array | `sum([1, 2, 3])` → `6` |
-| `average(arr)` | Average; `NaN` for an empty array | `average([1, 2, 3])` → `2` |
+| `sum(arr, fn?)` | Sum; optional iteratee | `sum([1, 2, 3])` → `6` |
+| `average(arr, fn?)` | Average; optional iteratee | `average([1, 2, 3])` → `2` |
 | `inRange(v, min, max)` | Whether the value is inside the closed interval | `inRange(5, 1, 10)` → `true` |
 | `lerp(start, end, t)` | Linear interpolation | `lerp(0, 100, 0.5)` → `50` |
 | `toInt(v, radix = 10)` | Convert to integer; `0` when unparsable | `toInt("42.9")` → `42` |

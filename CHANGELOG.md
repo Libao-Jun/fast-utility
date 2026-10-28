@@ -4,7 +4,7 @@
 
 ## v1.0.0
 
-首个正式版本：零依赖、Tree-shaking 友好的 JavaScript / TypeScript 工具函数库，共 159 个函数。
+首个正式版本：零依赖、Tree-shaking 友好的 JavaScript / TypeScript 工具函数库，共 178 个函数。
 
 **核心特性**
 
@@ -68,7 +68,7 @@
 - `compactCN` — 大数简化（中文缩写，如 `1.2万`）
 - `signed` — 带正负号的数值格式化
 
-### 字符串 `format` / `string`（30）
+### 字符串 `format` / `string`（32）
 
 - `maskPhone` — 手机号脱敏
 - `spacePhone` — 手机号按 3-4-4 空格分隔
@@ -100,11 +100,13 @@
 - `kebabCase` — 转换为短横线命名
 - `deburr` — 去除拉丁变音符号
 - `escapeRegExp` — 转义正则元字符
+- `template` — 按 `{{key}}` 占位符替换变量
+- `titleCase` — 转换为标题式命名
 
-### 数组 `array`（32）
+### 数组 `array`（40）
 
-- `unique` — 按 SameValueZero 去重
-- `uniqueByKey` — 对象数组按属性去重（保留最后一次出现）
+- `unique` — 按 SameValueZero 去重；可传取值函数按值去重（保留首次出现）
+- `uniqueByKey` — 对象数组按属性去重（保留首次出现）
 - `sortNumAsc` — 数值升序排序
 - `sortNumDesc` — 数值降序排序
 - `sortByKey` — 对象数组按数值属性排序
@@ -112,7 +114,7 @@
 - `mergeArrays` — 合并多个数组
 - `flatten` — 多维数组扁平化到指定层级
 - `arrFind` — 按属性值查找首个匹配项
-- `groupBy` — 按属性分组
+- `groupBy` — 按属性或取值函数分组
 - `filterEmptyValues` — 移除对象中的空值属性
 - `createRange` — 按长度生成序列数组
 - `chunk` — 按固定长度切分数组
@@ -135,8 +137,16 @@
 - `maxBy` — 按数值取值取最大元素
 - `minBy` — 按数值取值取最小元素
 - `sortBy` — 按取值函数升序排序
+- `replace` — 替换第一个匹配元素
+- `replaceOrAppend` — 替换第一个匹配元素，未匹配时追加
+- `toggle` — 切换元素存在状态（可强制保留 / 移除）
+- `zipToObject` — 由键数组与值来源构造对象
+- `rotate` — 旋转数组（正数向右、负数向左）
+- `intersects` — 判断两个数组是否存在交集
+- `objectify` — 按取值函数把数组投影为对象
+- `select` — 单次遍历完成过滤与映射
 
-### 对象 `object`（8）
+### 对象 `object`（12）
 
 - `pick` — 挑选自有属性
 - `omit` — 排除指定属性
@@ -146,6 +156,10 @@
 - `merge` — 深度合并普通对象（返回新对象，拦截原型污染键）
 - `get` — 按路径读取值（支持 `a[0].b`）
 - `has` — 判断路径是否存在
+- `set` — 按路径写入（不可变，仅复制路径节点）
+- `crush` — 将嵌套对象压平为路径键
+- `construct` — 将路径键还原为嵌套对象
+- `mapEntries` — 同时映射对象的键与值
 
 ### 拷贝 `copy`（4）
 
@@ -177,7 +191,7 @@
 - `onScroll` — 监听页面滚动（rAF 节流，被动监听）
 - `observeIntersection` — 监听元素进出可视区域
 
-### 函数控制 `control` / `function`（8）
+### 函数控制 `control` / `function`（10）
 
 - `debounce` — 防抖，返回值带 `cancel()`
 - `throttle` — 节流，返回值带 `cancel()`
@@ -186,7 +200,15 @@
 - `pipe` — 从左到右组合函数
 - `compose` — 从右到左组合函数
 - `partial` — 预置前部参数
-- `attempt` — 捕获异常并返回 `[error, value]` 元组
+- `attempt` — 捕获同步 / 异步异常并返回 `[error, value]` 元组（支持透传参数）
+- `chain` — 顺序串联函数，首个函数可接收多个参数
+- `guard` — 吞掉异常返回 `undefined`，可定制放行条件
+
+### 异步 `async`（3）
+
+- `sleep` — 等待指定毫秒后 resolve
+- `retry` — 失败后按次数与延迟重试（支持自定义退避与停止条件）
+- `parallel` — 限制并发数执行异步映射，结果保持输入顺序
 
 ### 数学 `math`（10）
 
@@ -194,8 +216,8 @@
 - `randomInt` — 生成闭区间内的随机整数
 - `randomFloat` — 生成半开区间内的随机浮点数
 - `round` — 四舍五入到指定小数位（修正浮点误差）
-- `sum` — 数组求和
-- `average` — 数组平均值
+- `sum` — 数组求和；可传取值函数
+- `average` — 数组平均值；可传取值函数
 - `inRange` — 判断数值是否在闭区间内
 - `lerp` — 线性插值
 - `toInt` — 转换为整数（失败返回 `0`）

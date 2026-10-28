@@ -4,19 +4,40 @@
  * @param arr - 待去重的数组
  * @returns 去重后的新数组（不会修改原数组）
  */
-export const unique = <T>(arr: readonly T[]): T[] => [...new Set(arr)]
+export function unique<T>(arr: readonly T[]): T[]
+/**
+ * 按取值函数去重，保留每个取值首次出现的元素。
+ * @template T - 数组元素的类型
+ * @template K - 取值类型
+ * @param arr - 待去重的数组
+ * @param identity - 取值函数，返回值相同即视为重复
+ * @returns 去重后的新数组（不会修改原数组）
+ */
+export function unique<T, K>(arr: readonly T[], identity: (item: T) => K): T[]
+export function unique<T, K>(arr: readonly T[], identity?: (item: T) => K): T[] {
+  if (!identity) return [...new Set(arr)]
+  const seen = new Set<K>()
+  const result: T[] = []
+  arr.forEach((item) => {
+    const key = identity(item)
+    if (seen.has(key)) return
+    seen.add(key)
+    result.push(item)
+  })
+  return result
+}
 
 /**
- * 对象数组按指定属性（key）去重；键相同时**后出现的元素覆盖先出现的元素**。
+ * 对象数组按指定属性（key）去重，保留首次出现的元素。
  * @template T - 对象元素的类型（需为可索引的普通对象）
  * @param arr - 待去重的对象数组
  * @param key - 用作去重依据的属性名
  * @returns 按 `key` 去重后的新数组
  */
 export const uniqueByKey = <T extends Record<string, any>>(
-  arr: T[],
+  arr: readonly T[],
   key: keyof T,
-): T[] => [...new Map(arr.map((item) => [item[key], item])).values()]
+): T[] => unique(arr, (item) => item[key])
 
 /**
  * 数值数组升序排序（不会改变原数组）。
@@ -95,19 +116,35 @@ export const arrFind = <T extends Record<string, any>>(
  * @param key - 分组依据的属性名
  * @returns 以属性值（转为字符串）为键、对应元素数组为值的分组对象
  */
-export const groupBy = <T extends Record<string, any>>(
-  arr: T[],
+export function groupBy<T extends Record<string, any>>(
+  arr: readonly T[],
   key: keyof T,
-): Record<string, T[]> => {
-  return arr.reduce(
-    (acc, item) => {
-      const groupKey = String(item[key]);
-      (acc[groupKey] ??= []).push(item)
-      return acc;
-    },
-    {} as Record<string, T[]>,
-  );
-};
+): Record<string, T[]>
+/**
+ * 将数组按取值函数分组。
+ * @template T - 元素类型
+ * @param arr - 待分组的数组
+ * @param iteratee - 返回分组键的取值函数
+ * @returns 以返回值（转为字符串）为键、对应元素数组为值的分组对象
+ */
+export function groupBy<T>(
+  arr: readonly T[],
+  iteratee: (item: T) => string | number,
+): Record<string, T[]>
+export function groupBy<T>(
+  arr: readonly T[],
+  keyOrFn: keyof T | ((item: T) => string | number),
+): Record<string, T[]> {
+  const getKey = resolveIteratee<T>(keyOrFn)
+  const groups = new Map<string, T[]>()
+  arr.forEach((item) => {
+    const groupKey = String(getKey(item))
+    const group = groups.get(groupKey)
+    if (group) group.push(item)
+    else groups.set(groupKey, [item])
+  })
+  return Object.fromEntries(groups)
+}
 
 /**
  * 移除对象中值为空（`null` / `undefined` / 空字符串 `""`）的属性。
@@ -432,4 +469,159 @@ export const sortBy = <T>(
     if (left > right) return 1
     return 0
   })
+}
+
+/**
+ * 替换数组中第一个匹配的元素，返回新数组。
+ * @template T - 元素类型
+ * @param arr - 源数组
+ * @param newItem - 用于替换的新元素
+ * @param match - 匹配函数，接收元素与索引
+ * @returns 替换后的新数组；未找到匹配项时返回原数组的副本
+ */
+export const replace = <T>(
+  arr: readonly T[],
+  newItem: T,
+  match: (item: T, index: number) => boolean,
+): T[] => {
+  const index = arr.findIndex(match)
+  if (index === -1) return [...arr]
+  return [...arr.slice(0, index), newItem, ...arr.slice(index + 1)]
+}
+
+/**
+ * 替换数组中第一个匹配的元素；未找到匹配项时追加到末尾。
+ * @template T - 元素类型
+ * @param arr - 源数组
+ * @param newItem - 用于替换或追加的新元素
+ * @param match - 匹配函数，接收元素与索引
+ * @returns 替换或追加后的新数组
+ */
+export const replaceOrAppend = <T>(
+  arr: readonly T[],
+  newItem: T,
+  match: (item: T, index: number) => boolean,
+): T[] => {
+  const index = arr.findIndex(match)
+  if (index === -1) return [...arr, newItem]
+  return [...arr.slice(0, index), newItem, ...arr.slice(index + 1)]
+}
+
+/**
+ * 切换元素的出现状态：存在则移除，不存在则追加。
+ * @template T - 元素类型
+ * @param arr - 源数组
+ * @param item - 目标元素
+ * @param force - 可选，`true` 强制保留、`false` 强制移除；省略时按当前状态取反
+ * @returns 处理后的新数组（不会修改原数组）
+ * @remarks 移除时会删除所有与目标相同的元素（SameValueZero 语义）。
+ */
+export const toggle = <T>(arr: readonly T[], item: T, force?: boolean): T[] => {
+  const exists = arr.includes(item)
+  const shouldAdd = force ?? !exists
+  if (shouldAdd) return exists ? [...arr] : [...arr, item]
+  return exists ? arr.filter((current) => !Object.is(current, item)) : [...arr]
+}
+
+/**
+ * 由键数组与值来源构造对象。
+ * @template K - 键类型
+ * @template V - 值类型
+ * @param keys - 键数组
+ * @param values - 值来源：单个值、与键对应的值数组，或取值函数
+ * @returns 以 `keys` 为键的新对象；值数组长度不足时对应键为 `undefined`
+ */
+export function zipToObject<K extends PropertyKey, V>(
+  keys: readonly K[],
+  values: (key: K, index: number) => V,
+): Record<K, V>
+export function zipToObject<K extends PropertyKey, V>(
+  keys: readonly K[],
+  values: readonly V[],
+): Record<K, V | undefined>
+export function zipToObject<K extends PropertyKey, V>(
+  keys: readonly K[],
+  values: V,
+): Record<K, V>
+export function zipToObject<K extends PropertyKey, V>(
+  keys: readonly K[],
+  values: V | readonly V[] | ((key: K, index: number) => V),
+): Record<K, V | undefined> {
+  const getValue = typeof values === "function"
+    ? (values as (key: K, index: number) => V)
+    : Array.isArray(values)
+      ? (_key: K, index: number) => (values as readonly V[])[index]
+      : () => values as V
+  return Object.fromEntries(
+    keys.map((key, index) => [key, getValue(key, index)]),
+  ) as Record<K, V | undefined>
+}
+
+/**
+ * 旋转数组：正数向右、负数向左移动指定步数。
+ * @template T - 元素类型
+ * @param arr - 源数组
+ * @param steps - 移动步数，默认 `1`；超出长度时按取模处理
+ * @returns 旋转后的新数组
+ */
+export const rotate = <T>(arr: readonly T[], steps = 1): T[] => {
+  if (arr.length === 0 || !Number.isFinite(steps)) return [...arr]
+  const offset = ((Math.trunc(steps) % arr.length) + arr.length) % arr.length
+  if (offset === 0) return [...arr]
+  return [...arr.slice(-offset), ...arr.slice(0, -offset)]
+}
+
+/**
+ * 判断两个数组是否存在交集（短路比较，不构造交集数组）。
+ * @template T - 元素类型
+ * @param a - 第一个数组
+ * @param b - 第二个数组
+ * @returns 存在任一相同元素返回 `true`
+ */
+export const intersects = <T>(a: readonly T[], b: readonly T[]): boolean => {
+  const [small, large] = a.length <= b.length ? [a, b] : [b, a]
+  const lookup = new Set(large)
+  return small.some((item) => lookup.has(item))
+}
+
+/**
+ * 将数组投影为对象：分别指定键与值的取值方式。
+ * @template T - 元素类型
+ * @template K - 键类型
+ * @template V - 值类型，默认与元素类型一致
+ * @param arr - 源数组
+ * @param getKey - 键取值函数
+ * @param getValue - 值取值函数，省略时直接使用元素本身
+ * @returns 以 `getKey` 结果为键的新对象
+ * @remarks 键冲突时后出现的元素覆盖先出现的。
+ */
+export const objectify = <T, K extends PropertyKey, V = T>(
+  arr: readonly T[],
+  getKey: (item: T) => K,
+  getValue: (item: T) => V = (item) => item as unknown as V,
+): Record<K, V> => {
+  return Object.fromEntries(
+    arr.map((item) => [getKey(item), getValue(item)]),
+  ) as Record<K, V>
+}
+
+/**
+ * 单次遍历同时完成过滤与映射。
+ * @template T - 元素类型
+ * @template R - 映射结果类型
+ * @param arr - 源数组
+ * @param mapper - 映射函数，仅对通过判定的元素调用
+ * @param predicate - 判定函数，接收元素与索引
+ * @returns 通过判定并完成映射的新数组
+ */
+export const select = <T, R>(
+  arr: readonly T[],
+  mapper: (item: T, index: number) => R,
+  predicate: (item: T, index: number) => boolean,
+): R[] => {
+  const result: R[] = []
+  arr.forEach((item, index) => {
+    if (predicate(item, index)) result.push(mapper(item, index))
+  })
+  return result
 }

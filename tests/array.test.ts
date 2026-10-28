@@ -32,6 +32,14 @@ import {
   maxBy,
   minBy,
   sortBy,
+  replace,
+  replaceOrAppend,
+  toggle,
+  zipToObject,
+  rotate,
+  intersects,
+  objectify,
+  select,
 } from '../src/array'
 
 // ============================================================
@@ -84,7 +92,7 @@ describe('unique', () => {
 // uniqueByKey
 // ============================================================
 describe('uniqueByKey', () => {
-  it('should dedupe objects by specified key (last wins via Map)', () => {
+  it('按指定键去重并保留首次出现', () => {
     const arr = [
       { id: 1, name: 'a' },
       { id: 1, name: 'b' },
@@ -92,17 +100,16 @@ describe('uniqueByKey', () => {
     ]
     const result = uniqueByKey(arr, 'id')
     expect(result).toHaveLength(2)
-    // Map constructor overwrites duplicate keys — last occurrence kept
-    expect(result[0]).toEqual({ id: 1, name: 'b' })
+    expect(result[0]).toEqual({ id: 1, name: 'a' })
     expect(result[1]).toEqual({ id: 2, name: 'c' })
   })
 
-  it('should preserve last occurrence for duplicate keys', () => {
+  it('重复键保留首次出现的元素', () => {
     const arr = [
       { id: 1, value: 'first' },
       { id: 1, value: 'second' },
     ]
-    expect(uniqueByKey(arr, 'id')).toEqual([{ id: 1, value: 'second' }])
+    expect(uniqueByKey(arr, 'id')).toEqual([{ id: 1, value: 'first' }])
   })
 
   it('should handle empty array', () => {
@@ -823,5 +830,185 @@ describe('sortBy', () => {
   it('取值相等时保持原有顺序', () => {
     const source = [{ k: 1, id: 'a' }, { k: 1, id: 'b' }]
     expect(sortBy(source, (item) => item.k).map((item) => item.id)).toEqual(['a', 'b'])
+  })
+})
+
+// ============================================================
+// unique with identity
+// ============================================================
+describe('unique with identity', () => {
+  it('按取值函数去重并保留首次出现', () => {
+    const source = [{ id: 1, name: 'a' }, { id: 1, name: 'b' }, { id: 2, name: 'c' }]
+    expect(unique(source, (item) => item.id)).toEqual([
+      { id: 1, name: 'a' },
+      { id: 2, name: 'c' },
+    ])
+  })
+
+  it('不传取值函数时按 SameValueZero 去重', () => {
+    expect(unique([1, 1, 2])).toEqual([1, 2])
+  })
+})
+
+// ============================================================
+// groupBy with iteratee
+// ============================================================
+describe('groupBy with iteratee', () => {
+  it('按取值函数分组', () => {
+    expect(groupBy([1, 2, 3, 4], (value) => (value % 2 === 0 ? 'even' : 'odd')))
+      .toEqual({ odd: [1, 3], even: [2, 4] })
+  })
+})
+
+// ============================================================
+// replace / replaceOrAppend
+// ============================================================
+describe('replace', () => {
+  it('替换第一个匹配项', () => {
+    expect(replace([{ id: 1, n: 'a' }, { id: 2, n: 'b' }], { id: 1, n: 'x' }, (item) => item.id === 1))
+      .toEqual([{ id: 1, n: 'x' }, { id: 2, n: 'b' }])
+  })
+
+  it('未匹配时返回原数组副本', () => {
+    const source = [1, 2]
+    const result = replace(source, 9, (item) => item === 3)
+    expect(result).toEqual([1, 2])
+    expect(result).not.toBe(source)
+  })
+
+  it('不修改原数组', () => {
+    const source = [1, 2, 3]
+    replace(source, 9, (item) => item === 2)
+    expect(source).toEqual([1, 2, 3])
+  })
+})
+
+describe('replaceOrAppend', () => {
+  it('匹配时替换，未匹配时追加', () => {
+    expect(replaceOrAppend([1, 2], 9, (item) => item === 2)).toEqual([1, 9])
+    expect(replaceOrAppend([1, 2], 9, (item) => item === 3)).toEqual([1, 2, 9])
+  })
+})
+
+// ============================================================
+// toggle
+// ============================================================
+describe('toggle', () => {
+  it('不存在时追加，存在时移除', () => {
+    expect(toggle([1, 2], 3)).toEqual([1, 2, 3])
+    expect(toggle([1, 2], 1)).toEqual([2])
+  })
+
+  it('force 为 true 时确保存在，为 false 时确保移除', () => {
+    expect(toggle([1], 1, true)).toEqual([1])
+    expect(toggle([1], 2, true)).toEqual([1, 2])
+    expect(toggle([1, 2], 1, false)).toEqual([2])
+    expect(toggle([1], 2, false)).toEqual([1])
+  })
+
+  it('移除所有重复项且不修改原数组', () => {
+    const source = [1, 2, 1]
+    expect(toggle(source, 1)).toEqual([2])
+    expect(source).toEqual([1, 2, 1])
+  })
+})
+
+// ============================================================
+// zipToObject
+// ============================================================
+describe('zipToObject', () => {
+  it('按键数组与值数组构造对象', () => {
+    expect(zipToObject(['a', 'b'], [1, 2])).toEqual({ a: 1, b: 2 })
+  })
+
+  it('支持取值函数', () => {
+    expect(zipToObject(['a', 'b'], (key, index) => `${key}${index}`))
+      .toEqual({ a: 'a0', b: 'b1' })
+  })
+
+  it('支持固定值', () => {
+    expect(zipToObject(['a', 'b'], 0)).toEqual({ a: 0, b: 0 })
+  })
+
+  it('值数组不足时对应键为 undefined', () => {
+    expect(zipToObject(['a', 'b'], [1])).toEqual({ a: 1, b: undefined })
+  })
+})
+
+// ============================================================
+// rotate
+// ============================================================
+describe('rotate', () => {
+  it('正数向右旋转，负数向左旋转', () => {
+    expect(rotate([1, 2, 3], 1)).toEqual([3, 1, 2])
+    expect(rotate([1, 2, 3], -1)).toEqual([2, 3, 1])
+  })
+
+  it('步数超过长度时取模', () => {
+    expect(rotate([1, 2, 3], 4)).toEqual([3, 1, 2])
+  })
+
+  it('步数为 0 或长度为 0 时返回副本', () => {
+    const source = [1, 2]
+    const result = rotate(source, 0)
+    expect(result).toEqual([1, 2])
+    expect(result).not.toBe(source)
+    expect(rotate([], 3)).toEqual([])
+  })
+})
+
+// ============================================================
+// intersects
+// ============================================================
+describe('intersects', () => {
+  it('存在交集返回 true', () => {
+    expect(intersects([1, 2], [2, 3])).toBe(true)
+  })
+
+  it('无交集或空数组返回 false', () => {
+    expect(intersects([1], [2])).toBe(false)
+    expect(intersects([], [1])).toBe(false)
+  })
+})
+
+// ============================================================
+// objectify
+// ============================================================
+describe('objectify', () => {
+  it('按键与值取值函数构造对象', () => {
+    const result = objectify(
+      [{ id: 1, name: 'a' }, { id: 2, name: 'b' }],
+      (item) => item.id,
+      (item) => item.name,
+    )
+    expect(result).toEqual({ 1: 'a', 2: 'b' })
+  })
+
+  it('省略值取值函数时直接使用元素', () => {
+    expect(objectify([{ id: 1 }], (item) => item.id)).toEqual({ 1: { id: 1 } })
+  })
+
+  it('键冲突时后者覆盖前者', () => {
+    const result = objectify([{ id: 1, n: 'a' }, { id: 1, n: 'b' }], (item) => item.id, (item) => item.n)
+    expect(result).toEqual({ 1: 'b' })
+  })
+})
+
+// ============================================================
+// select
+// ============================================================
+describe('select', () => {
+  it('先过滤再映射，仅遍历一次', () => {
+    expect(select([1, 2, 3, 4], (value) => value * value, (value) => value > 2))
+      .toEqual([9, 16])
+  })
+
+  it('判定函数可读取索引', () => {
+    expect(select(['a', 'b', 'c'], (value) => value.toUpperCase(), (_value, index) => index !== 1))
+      .toEqual(['A', 'C'])
+  })
+
+  it('无元素通过时返回空数组', () => {
+    expect(select([1, 2], (value) => value, () => false)).toEqual([])
   })
 })

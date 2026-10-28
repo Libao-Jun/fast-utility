@@ -185,3 +185,149 @@ export const has = (
   }
   return true
 }
+
+/** 内部工具：沿路径写入值，仅复制路径上的节点。 */
+const setIn = (
+  node: any,
+  segments: (string | number)[],
+  index: number,
+  value: unknown,
+): any => {
+  const key = segments[index]
+  if (index === segments.length - 1) {
+    if (Array.isArray(node)) {
+      const copy = node.slice()
+      copy[key as any] = value
+      return copy
+    }
+    return { ...(node ?? {}), [key]: value }
+  }
+  const next = segments[index + 1]
+  const nextIsIndex = typeof next === "number" || /^\d+$/.test(String(next))
+  const current = node?.[key as any]
+  const base = current !== null && typeof current === "object"
+    ? current
+    : (nextIsIndex ? [] : {})
+  const child = setIn(base, segments, index + 1, value)
+  if (Array.isArray(node)) {
+    const copy = node.slice()
+    copy[key as any] = child
+    return copy
+  }
+  return { ...(node ?? {}), [key]: child }
+}
+
+/**
+ * 按路径写入值，返回新对象（不修改入参，仅复制路径上的节点）。
+ * @template T - 目标对象类型
+ * @param obj - 目标对象
+ * @param path - 路径，支持 `a.b.c`、`a[0].b` 或键数组
+ * @param value - 待写入的值
+ * @returns 写入后的新对象；空路径返回原对象
+ * @remarks 路径中缺失的层级会自动创建：下一段为数字时创建数组，否则创建普通对象。包含 `__proto__`、`constructor`、`prototype` 的路径会抛出 `TypeError`。
+ */
+export const set = <T extends object>(
+  obj: T,
+  path: string | readonly (string | number)[],
+  value: unknown,
+): T => {
+  const segments = toPath(path)
+  if (segments.length === 0) return obj
+  segments.forEach((segment) => {
+    if (isUnsafeKey(String(segment))) {
+      throw new TypeError(`Unsafe path segment: ${String(segment)}`)
+    }
+  })
+  return setIn(obj, segments, 0, value) as T
+}
+
+/**
+ * 把嵌套对象压平为「路径 → 叶子值」的单层对象。
+ * @param obj - 待压平的对象或数组
+ * @param separator - 路径分隔符，默认 `"."`
+ * @returns 以路径字符串为键的新对象
+ * @remarks 数组下标以数字段表示（如 `list.0.name`）；空对象 / 空数组按叶子值保留。
+ */
+export const crush = (
+  obj: object,
+  separator = ".",
+): Record<string, unknown> => {
+  const result: Record<string, unknown> = {}
+  const walk = (value: any, prefix: string): void => {
+    if (Array.isArray(value)) {
+      if (value.length === 0) {
+        if (prefix) result[prefix] = []
+        return
+      }
+      value.forEach((item, index) => {
+        walk(item, prefix ? `${prefix}${separator}${index}` : String(index))
+      })
+      return
+    }
+    if (isPlainObject(value)) {
+      const keys = Object.keys(value)
+      if (keys.length === 0) {
+        if (prefix) result[prefix] = {}
+        return
+      }
+      keys.forEach((key) => {
+        if (isUnsafeKey(key)) return
+        walk(value[key], prefix ? `${prefix}${separator}${key}` : key)
+      })
+      return
+    }
+    if (prefix) result[prefix] = value
+  }
+  walk(obj, "")
+  return result
+}
+
+/**
+ * 把「路径 → 值」的单层对象还原为嵌套结构（`crush` 的逆操作）。
+ * @param obj - 以路径字符串为键的对象
+ * @param separator - 路径分隔符，默认 `"."`
+ * @returns 还原后的嵌套对象
+ * @remarks 数字段会自动创建数组；包含 `__proto__`、`constructor`、`prototype` 的路径会被跳过。
+ */
+export const construct = (
+  obj: Record<string, unknown>,
+  separator = ".",
+): Record<string, any> => {
+  const result: Record<string, any> = {}
+  Object.keys(obj).forEach((path) => {
+    const segments = path.split(separator).filter((segment) => segment.length > 0)
+    if (segments.length === 0 || segments.some(isUnsafeKey)) return
+    let node: any = result
+    segments.forEach((segment, index) => {
+      if (index === segments.length - 1) {
+        node[segment] = obj[path]
+        return
+      }
+      const nextIsIndex = /^\d+$/.test(segments[index + 1])
+      if (node[segment] === null || typeof node[segment] !== "object") {
+        node[segment] = nextIsIndex ? [] : {}
+      }
+      node = node[segment]
+    })
+  })
+  return result
+}
+
+/**
+ * 同时映射对象的键与值，返回新对象。
+ * @template T - 源对象类型
+ * @template K - 新键类型
+ * @template V - 新值类型
+ * @param obj - 源对象
+ * @param fn - 映射函数，接收原键与原值，返回 `[新键, 新值]`
+ * @returns 映射后的新对象
+ * @remarks 仅遍历自有可枚举字符串键；新键冲突时后出现的覆盖先出现的。
+ */
+export const mapEntries = <T extends object, K extends PropertyKey, V>(
+  obj: T,
+  fn: (key: keyof T, value: T[keyof T]) => [K, V],
+): Record<K, V> => {
+  return Object.fromEntries(
+    (Object.keys(obj) as (keyof T)[]).map((key) => fn(key, obj[key])),
+  ) as Record<K, V>
+}

@@ -187,16 +187,131 @@ export const partial = <T extends (...args: any[]) => any>(
     (fn as (...args: any[]) => ReturnType<T>)(...preset, ...rest)
 }
 
+/** 内部工具：把任意异常统一为 `Error`。 */
+const toError = (error: unknown): Error =>
+  error instanceof Error ? error : new Error(String(error))
+
 /**
  * 执行函数并捕获异常，统一返回 `[error, value]` 元组，避免调用方编写 try/catch。
  * @template T - 成功时的结果类型
- * @param fn - 待执行的零参函数
- * @returns 成功为 `[undefined, 结果]`，失败为 `[Error, undefined]`；非 `Error` 异常会被包装为 `Error`
+ * @param fn - 待执行的函数，可返回 Promise
+ * @param args - 传给 `fn` 的参数
+ * @returns 同步函数返回元组，异步函数返回 `Promise` 包装的元组；非 `Error` 异常会被包装为 `Error`
  */
-export const attempt = <T>(fn: () => T): AttemptResult<T> => {
+export function attempt<A extends any[], T>(
+  fn: (...args: A) => Promise<T>,
+  ...args: A
+): Promise<AttemptResult<T>>
+export function attempt<A extends any[], T>(
+  fn: (...args: A) => T,
+  ...args: A
+): AttemptResult<T>
+export function attempt<A extends any[], T>(
+  fn: (...args: A) => T | Promise<T>,
+  ...args: A
+): AttemptResult<T> | Promise<AttemptResult<T>> {
   try {
-    return [undefined, fn()]
+    const result = fn(...args)
+    if (result && typeof (result as any).then === "function") {
+      return Promise.resolve(result as Promise<T>).then(
+        (value) => [undefined, value] as AttemptResult<T>,
+        (error) => [toError(error), undefined] as AttemptResult<T>,
+      )
+    }
+    return [undefined, result as T]
   } catch (error) {
-    return [error instanceof Error ? error : new Error(String(error)), undefined]
+    return [toError(error), undefined]
+  }
+}
+
+/**
+ * 按顺序串联函数：第一个函数接收全部初始参数，后续函数接收上一步结果。
+ * @template A - 初始参数类型
+ * @template B - 第一步结果类型
+ * @template C - 最终结果类型
+ * @param f1 - 第一个执行的函数，可接收多个参数
+ * @param f2 - 第二个执行的函数
+ * @returns 串联后的函数
+ */
+export function chain<A extends any[], B, C>(
+  f1: (...args: A) => B,
+  f2: (value: B) => C,
+): (...args: A) => C
+/**
+ * 按顺序串联函数（三步）。
+ * @template A - 初始参数类型
+ * @template B - 第一步结果类型
+ * @template C - 第二步结果类型
+ * @template D - 最终结果类型
+ * @param f1 - 第一个执行的函数，可接收多个参数
+ * @param f2 - 第二个执行的函数
+ * @param f3 - 第三个执行的函数
+ * @returns 串联后的函数
+ */
+export function chain<A extends any[], B, C, D>(
+  f1: (...args: A) => B,
+  f2: (value: B) => C,
+  f3: (value: C) => D,
+): (...args: A) => D
+/**
+ * 按顺序串联函数（四步）。
+ * @template A - 初始参数类型
+ * @template B - 第一步结果类型
+ * @template C - 第二步结果类型
+ * @template D - 第三步结果类型
+ * @template E - 最终结果类型
+ * @param f1 - 第一个执行的函数，可接收多个参数
+ * @param f2 - 第二个执行的函数
+ * @param f3 - 第三个执行的函数
+ * @param f4 - 第四个执行的函数
+ * @returns 串联后的函数
+ */
+export function chain<A extends any[], B, C, D, E>(
+  f1: (...args: A) => B,
+  f2: (value: B) => C,
+  f3: (value: C) => D,
+  f4: (value: D) => E,
+): (...args: A) => E
+export function chain(
+  ...fns: Array<(...args: any[]) => any>
+): (...args: any[]) => any {
+  if (fns.length === 0) {
+    throw new TypeError("chain: at least one function is required")
+  }
+  return (...args: any[]): any =>
+    fns.slice(1).reduce((value, fn) => fn(value), fns[0](...args))
+}
+
+/**
+ * 执行函数并吞掉异常：失败时返回 `undefined`，适合可降级的可选操作。
+ * @template T - 成功时的结果类型
+ * @param fn - 待执行的函数，可返回 Promise
+ * @param shouldGuard - 可选，返回 `false` 时重新抛出该异常
+ * @returns 同步函数返回结果或 `undefined`，异步函数返回 `Promise` 包装的结果
+ */
+export function guard<T>(
+  fn: () => Promise<T>,
+  shouldGuard?: (error: unknown) => boolean,
+): Promise<T | undefined>
+export function guard<T>(
+  fn: () => T,
+  shouldGuard?: (error: unknown) => boolean,
+): T | undefined
+export function guard<T>(
+  fn: () => T | Promise<T>,
+  shouldGuard?: (error: unknown) => boolean,
+): T | undefined | Promise<T | undefined> {
+  const handle = (error: unknown): undefined => {
+    if (shouldGuard && !shouldGuard(error)) throw error
+    return undefined
+  }
+  try {
+    const result = fn()
+    if (result && typeof (result as any).then === "function") {
+      return Promise.resolve(result as Promise<T>).catch(handle)
+    }
+    return result as T
+  } catch (error) {
+    return handle(error)
   }
 }

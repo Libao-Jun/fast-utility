@@ -327,3 +327,21 @@ describe('toFloat', () => {
     expect(toFloat('abc')).toBe(0)
   })
 })
+
+// ============================================================
+// sum / average with iteratee
+// ============================================================
+describe('sum / average with iteratee', () => {
+  it('按取值函数求和', () => {
+    expect(sum([{ n: 1 }, { n: 2 }], (item) => item.n)).toBe(3)
+  })
+
+  it('按取值函数求平均值', () => {
+    expect(average([{ n: 1 }, { n: 3 }], (item) => item.n)).toBe(2)
+  })
+
+  it('空数组保持原有边界行为', () => {
+    expect(sum([], (item: { n: number }) => item.n)).toBe(0)
+    expect(average([], (item: { n: number }) => item.n)).toBeNaN()
+  })
+})

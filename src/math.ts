@@ -59,14 +59,49 @@ export const round = (value: number, decimals: number = 0): number => {
  * @param arr - 数值数组
  * @returns 所有元素之和（空数组为 `0`）
  */
-export const sum = (arr: number[]): number => arr.reduce((acc, val) => acc + val, 0)
+export function sum(arr: readonly number[]): number
+/**
+ * 按取值函数对数组求和。
+ * @template T - 元素类型
+ * @param arr - 源数组
+ * @param iteratee - 返回数值的取值函数
+ * @returns 所有取值之和（空数组为 `0`）
+ */
+export function sum<T>(arr: readonly T[], iteratee: (item: T) => number): number
+export function sum<T>(
+  arr: readonly (T | number)[],
+  iteratee?: (item: T) => number,
+): number {
+  if (iteratee) {
+    return (arr as readonly T[]).reduce((acc, item) => acc + iteratee(item), 0)
+  }
+  return (arr as readonly number[]).reduce((acc, value) => acc + value, 0)
+}
 
 /**
  * 计算数值数组的平均值。
  * @param arr - 数值数组
  * @returns 平均值；空数组返回 `NaN`
  */
-export const average = (arr: number[]): number => arr.length === 0 ? NaN : sum(arr) / arr.length
+export function average(arr: readonly number[]): number
+/**
+ * 按取值函数计算数组平均值。
+ * @template T - 元素类型
+ * @param arr - 源数组
+ * @param iteratee - 返回数值的取值函数
+ * @returns 平均值；空数组返回 `NaN`
+ */
+export function average<T>(arr: readonly T[], iteratee: (item: T) => number): number
+export function average<T>(
+  arr: readonly (T | number)[],
+  iteratee?: (item: T) => number,
+): number {
+  if (arr.length === 0) return NaN
+  const total = iteratee
+    ? (arr as readonly T[]).reduce((acc, item) => acc + iteratee(item), 0)
+    : (arr as readonly number[]).reduce((acc, value) => acc + value, 0)
+  return total / arr.length
+}
 
 /**
  * 判断数值是否在 `[min, max]` 闭区间内（自动纠正顺序）。

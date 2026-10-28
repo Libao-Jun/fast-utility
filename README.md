@@ -4,7 +4,7 @@
 
 [English](./README.en.md) | 简体中文
 
-fast-utility 把日常开发中反复出现的工具函数收拢到一处：类型判断、时间日期、数字与货币格式化、字符串处理、数组与对象操作、深拷贝、存储与 Cookie、浏览器增强、防抖节流、数学计算与格式校验，共 159 个函数。全部从包根按名导出，用到哪个打包哪个。
+fast-utility 把日常开发中反复出现的工具函数收拢到一处：类型判断、时间日期、数字与货币格式化、字符串处理、数组与对象操作、深拷贝、存储与 Cookie、浏览器增强、防抖节流、异步控制、数学计算与格式校验，共 178 个函数。全部从包根按名导出，用到哪个打包哪个。
 
 - **零运行时依赖**：安装体积即自身代码。
 - **Tree-shaking 友好**：每个函数独立导出，未引用的不会进入产物。
@@ -46,7 +46,7 @@ search.cancel();
 
 ## API
 
-按用途分 11 组。标注「仅浏览器」的分组依赖 `window` / `document` / `localStorage` / `navigator`，在 Node 中会抛错。
+按用途分 12 组。标注「仅浏览器」的分组依赖 `window` / `document` / `localStorage` / `navigator`，在 Node 中会抛错。
 
 ### 类型判断
 
@@ -139,20 +139,22 @@ search.cancel();
 | `kebabCase(s)` | 转换为短横线命名 | `kebabCase("fooBar")` → `"foo-bar"` |
 | `deburr(s)` | 去除拉丁变音符号 | `deburr("café")` → `"cafe"` |
 | `escapeRegExp(s)` | 转义正则元字符 | `escapeRegExp("a.b")` → `"a\\.b"` |
+| `template(s, data, pattern?)` | 按 `{{key}}` 占位符替换变量 | `template("Hi {{name}}", { name: "Ray" })` → `"Hi Ray"` |
+| `titleCase(s)` | 转换为标题式命名（空格分隔、首字母大写） | `titleCase("fooBar baz")` → `"Foo Bar Baz"` |
 
 ### 数组
 
 | 函数 | 说明 | 示例 |
 | --- | --- | --- |
-| `unique(arr)` | 按 SameValueZero 去重（`NaN` 视为相同） | `unique([1, 2, 2])` → `[1, 2]` |
-| `uniqueByKey(arr, key)` | 对象数组按 key 去重，**保留最后一次出现** | `uniqueByKey([{ id: 1, n: "a" }, { id: 1, n: "b" }], "id")` → `[{ id: 1, n: "b" }]` |
+| `unique(arr, identity?)` | 去重；可传取值函数按值去重并保留首次出现 | `unique([1, 2, 2])` → `[1, 2]` |
+| `uniqueByKey(arr, key)` | 对象数组按 key 去重，**保留首次出现** | `uniqueByKey([{ id: 1, n: "a" }, { id: 1, n: "b" }], "id")` → `[{ id: 1, n: "a" }]` |
 | `sortNumAsc(arr)` / `sortNumDesc(arr)` | 数值升序 / 降序，返回新数组 | `sortNumAsc([3, 1, 2])` → `[1, 2, 3]` |
 | `sortByKey(arr, key, order = "asc")` | 按数值属性排序，返回新数组 | `sortByKey([{ n: 3 }, { n: 1 }], "n")` → `[{ n: 1 }, { n: 3 }]` |
 | `toArray(x)` | 类数组 / 可迭代对象转数组 | `toArray("abc")` → `["a", "b", "c"]` |
 | `mergeArrays(...arrs)` | 合并多个数组 | `mergeArrays([1], [2, 3])` → `[1, 2, 3]` |
 | `flatten(arr, depth = 1)` | 扁平化到指定层级 | `flatten([1, [2, [3]]], 2)` → `[1, 2, 3]` |
 | `arrFind(arr, key, value)` | 查找首个匹配项，未找到返回 `undefined` | `arrFind([{ id: 2 }], "id", 2)` → `{ id: 2 }` |
-| `groupBy(arr, key)` | 按属性分组 | `groupBy([{ t: "a" }, { t: "b" }], "t")` → `{ a: [...], b: [...] }` |
+| `groupBy(arr, keyOrFn)` | 按属性或取值函数分组 | `groupBy([{ t: "a" }, { t: "b" }], "t")` → `{ a: [...], b: [...] }` |
 | `createRange(len, mapFn?)` | 生成长度序列，可传映射函数 | `createRange(3)` → `[0, 1, 2]` |
 | `chunk(arr, size)` | 按固定长度切分数组 | `chunk([1, 2, 3], 2)` → `[[1, 2], [3]]` |
 | `compact(arr)` | 去除假值 | `compact([0, 1, "", 2])` → `[1, 2]` |
@@ -171,6 +173,14 @@ search.cancel();
 | `keyBy(arr, keyOrFn)` | 按属性或函数建立索引 | `keyBy([{ id: 1 }], "id")` → `{ "1": { id: 1 } }` |
 | `maxBy(arr, fn)` / `minBy(arr, fn)` | 按数值取值取最大 / 最小元素 | `maxBy([{ n: 1 }, { n: 2 }], o => o.n)` → `{ n: 2 }` |
 | `sortBy(arr, fn)` | 按取值升序排序，返回新数组 | `sortBy([3, 1], n => n)` → `[1, 3]` |
+| `replace(arr, newItem, match)` | 替换第一个匹配元素，返回新数组 | `replace([1, 2], 9, n => n === 2)` → `[1, 9]` |
+| `replaceOrAppend(arr, newItem, match)` | 替换第一个匹配元素，未匹配时追加到末尾 | `replaceOrAppend([1], 9, n => n === 2)` → `[1, 9]` |
+| `toggle(arr, item, force?)` | 切换元素存在状态，可强制保留 / 移除 | `toggle([1, 2], 1)` → `[2]` |
+| `zipToObject(keys, values)` | 键数组 + 值来源构造对象 | `zipToObject(["a", "b"], [1, 2])` → `{ a: 1, b: 2 }` |
+| `rotate(arr, steps = 1)` | 旋转数组，正数向右、负数向左 | `rotate([1, 2, 3], 1)` → `[3, 1, 2]` |
+| `intersects(a, b)` | 两个数组是否存在交集 | `intersects([1, 2], [2, 3])` → `true` |
+| `objectify(arr, getKey, getValue?)` | 按取值函数把数组投影为对象 | `objectify([{ id: 1 }], o => o.id)` → `{ 1: { id: 1 } }` |
+| `select(arr, mapper, predicate)` | 单次遍历完成过滤与映射 | `select([1, 2, 3], n => n * n, n => n > 1)` → `[4, 9]` |
 
 ### 对象与拷贝
 
@@ -190,6 +200,10 @@ search.cancel();
 | `merge(target, ...sources)` | 深度合并普通对象，返回新对象 | `merge({ a: { b: 1 } }, { a: { c: 2 } })` → `{ a: { b: 1, c: 2 } }` |
 | `get(obj, path, default?)` | 按路径读取，支持 `a[0].b` | `get({ a: { b: 1 } }, "a.b")` → `1` |
 | `has(obj, path)` | 判断路径是否存在 | `has({ a: { b: 1 } }, "a.b")` → `true` |
+| `set(obj, path, value)` | 按路径写入，返回新对象（仅复制路径节点） | `set({ a: 1 }, "b.c", 2)` → `{ a: 1, b: { c: 2 } }` |
+| `crush(obj, sep = ".")` | 将嵌套对象压平为路径键 | `crush({ a: { b: 1 } })` → `{ "a.b": 1 }` |
+| `construct(obj, sep = ".")` | 将路径键还原为嵌套对象 | `construct({ "a.b": 1 })` → `{ a: { b: 1 } }` |
+| `mapEntries(obj, fn)` | 同时映射键与值 | `mapEntries({ a: 1 }, (k, v) => [k.toUpperCase(), v])` → `{ A: 1 }` |
 
 ### 存储与 Cookie（仅浏览器）
 
@@ -222,12 +236,22 @@ search.cancel();
 | --- | --- | --- |
 | `debounce(fn, delay = 300, opts?)` | 停止调用 `delay` 毫秒后执行；`leading` 默认 `false`、`trailing` 默认 `true`；返回值带 `cancel()` | `debounce(save, 500)` |
 | `throttle(fn, interval = 300, opts?)` | 固定间隔内最多执行一次；`leading` / `trailing` 默认均为 `true`；返回值带 `cancel()` | `throttle(onScroll, 200)` |
+
+### 异步
+
+| 函数 | 说明 | 示例 |
+| --- | --- | --- |
+| `sleep(ms)` | 等待指定毫秒后 resolve | `await sleep(100)` |
+| `retry(fn, opts?)` | 失败后按次数与延迟重试，`times` 默认 3 | `await retry(load, { times: 3 })` |
+| `parallel(items, fn, limit?)` | 限制并发数执行异步映射，结果保持输入顺序 | `await parallel(list, load, 4)` |
 | `once(fn)` | 最多执行一次并缓存结果 | `const init = once(setup)` |
 | `memoize(fn, resolver?)` | 按首参缓存结果，可自定义缓存键 | `const f = memoize(slowFn)` |
 | `pipe(...fns)` | 从左到右组合函数 | `pipe(f, g)(x)` → `g(f(x))` |
 | `compose(...fns)` | 从右到左组合函数 | `compose(f, g)(x)` → `f(g(x))` |
 | `partial(fn, ...args)` | 预置前部参数 | `partial(add, 1)(2)` → `3` |
-| `attempt(fn)` | 捕获异常，返回 `[error, value]` | `attempt(() => 1)` → `[undefined, 1]` |
+| `attempt(fn, ...args)` | 捕获同步 / 异步异常，返回 `[error, value]` | `attempt(() => 1)` → `[undefined, 1]` |
+| `chain(...fns)` | 顺序串联函数，首函数可接收多个参数 | `chain((a, b) => a + b, n => n * 2)(1, 2)` → `6` |
+| `guard(fn, shouldGuard?)` | 吞掉异常返回 `undefined`，可定制放行条件 | `guard(jsonParse)` → 结果或 `undefined` |
 
 ### 数学
 
@@ -237,8 +261,8 @@ search.cancel();
 | `randomInt(min, max)` | 闭区间随机整数（含两端） | `randomInt(1, 6)` → `1`–`6` |
 | `randomFloat(min, max)` | 半开区间随机浮点数 | `randomFloat(0, 1)` → `0.374...` |
 | `round(v, decimals = 0)` | 四舍五入到指定小数位 | `round(3.14159, 2)` → `3.14` |
-| `sum(arr)` | 求和，空数组返回 `0` | `sum([1, 2, 3])` → `6` |
-| `average(arr)` | 平均值，空数组返回 `NaN` | `average([1, 2, 3])` → `2` |
+| `sum(arr, fn?)` | 求和；可传取值函数 | `sum([1, 2, 3])` → `6` |
+| `average(arr, fn?)` | 平均值；可传取值函数 | `average([1, 2, 3])` → `2` |
 | `inRange(v, min, max)` | 是否在闭区间内 | `inRange(5, 1, 10)` → `true` |
 | `lerp(start, end, t)` | 线性插值 | `lerp(0, 100, 0.5)` → `50` |
 | `toInt(v, radix = 10)` | 转换为整数，失败返回 `0` | `toInt("42.9")` → `42` |
