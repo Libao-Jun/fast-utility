@@ -208,19 +208,6 @@ Most of the `is*` family are type guards (`v is T`) and can be used directly for
 | `isEmail(v)` | Email format check (stricter) | `isEmail("a@b.com")` → `true` |
 | `isTel(v)` | Mainland China mobile number (`1` first, second digit `3`–`9`, 11 digits) | `isTel("13812345678")` → `true` |
 
-## Runtime requirements
-
-| Feature | Minimum requirement |
-| --- | --- |
-| `??` / `?.` / spread syntax | ES2020 |
-| `Array.prototype.flat` | Chrome 69+ / Node 11+ |
-| `Object.fromEntries` | Chrome 73+ / Node 12+ |
-| `TextEncoder` (`byteSize`) | Chrome 38+ / Node 11+ |
-| `structuredClone` | Chrome 98+ / Node 17+ |
-| `Intl` formatting | Modern browsers / Node 12+ |
-
-Recommended: Chrome 98+, Safari 15.4+, Node 18+. For ES5 / IE11, transpile `node_modules/fast-utility` with Babel and add polyfills yourself.
-
 ## License
 
 [MIT](https://opensource.org/licenses/MIT) © newborn_calf

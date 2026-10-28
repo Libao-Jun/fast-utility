@@ -208,19 +208,6 @@ search.cancel();
 | `isEmail(v)` | 邮箱格式校验（较严格） | `isEmail("a@b.com")` → `true` |
 | `isTel(v)` | 国内手机号（`1` 开头、第二位 `3`–`9`、共 11 位） | `isTel("13812345678")` → `true` |
 
-## 运行环境
-
-| 能力 | 最低要求 |
-| --- | --- |
-| `??` / `?.` / 展开运算符 | ES2020 |
-| `Array.prototype.flat` | Chrome 69+ / Node 11+ |
-| `Object.fromEntries` | Chrome 73+ / Node 12+ |
-| `TextEncoder`（`byteSize`） | Chrome 38+ / Node 11+ |
-| `structuredClone` | Chrome 98+ / Node 17+ |
-| `Intl` 格式化 | 现代浏览器 / Node 12+ |
-
-推荐环境：Chrome 98+、Safari 15.4+、Node 18+。ES5 / IE11 需自行用 Babel 转译 `node_modules/fast-utility` 并补充 polyfill。
-
 ## License
 
 [MIT](https://opensource.org/licenses/MIT) © newborn_calf
