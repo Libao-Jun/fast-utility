@@ -2,15 +2,15 @@ import { describe, it, expect } from 'vitest'
 import {
   unique,
   uniqueByKey,
-  sortNumAsc,
-  sortNumDesc,
-  sortByKey,
+  sortNumbersAscending,
+  sortNumbersDescending,
+  sortNumbersByKey,
   toArray,
   mergeArrays,
   flatten,
-  arrFind,
+  findInArray,
   groupBy,
-  filterEmptyValues,
+  omitEmptyValues,
   createRange,
   chunk,
   compact,
@@ -37,9 +37,9 @@ import {
   toggle,
   zipToObject,
   rotate,
-  intersects,
-  objectify,
-  select,
+  hasIntersection,
+  toObjectBy,
+  filterMap,
 } from '../src/array'
 
 // ============================================================
@@ -145,110 +145,110 @@ describe('uniqueByKey', () => {
 })
 
 // ============================================================
-// sortNumAsc
+// sortNumbersAscending
 // ============================================================
-describe('sortNumAsc', () => {
+describe('sortNumbersAscending', () => {
   it('should sort numbers in ascending order', () => {
-    expect(sortNumAsc([3, 1, 2])).toEqual([1, 2, 3])
+    expect(sortNumbersAscending([3, 1, 2])).toEqual([1, 2, 3])
   })
 
   it('should handle negative numbers', () => {
-    expect(sortNumAsc([-1, -3, 0, 2])).toEqual([-3, -1, 0, 2])
+    expect(sortNumbersAscending([-1, -3, 0, 2])).toEqual([-3, -1, 0, 2])
   })
 
   it('should handle empty array', () => {
-    expect(sortNumAsc([])).toEqual([])
+    expect(sortNumbersAscending([])).toEqual([])
   })
 
   it('should handle single element', () => {
-    expect(sortNumAsc([42])).toEqual([42])
+    expect(sortNumbersAscending([42])).toEqual([42])
   })
 
   it('should not mutate original', () => {
     const arr = [3, 1, 2]
-    const result = sortNumAsc(arr)
+    const result = sortNumbersAscending(arr)
     expect(arr).toEqual([3, 1, 2])
   })
 
   it('should handle already sorted array', () => {
-    expect(sortNumAsc([1, 2, 3])).toEqual([1, 2, 3])
+    expect(sortNumbersAscending([1, 2, 3])).toEqual([1, 2, 3])
   })
 
   it('should handle duplicate values', () => {
-    expect(sortNumAsc([3, 1, 2, 1])).toEqual([1, 1, 2, 3])
+    expect(sortNumbersAscending([3, 1, 2, 1])).toEqual([1, 1, 2, 3])
   })
 })
 
 // ============================================================
-// sortNumDesc
+// sortNumbersDescending
 // ============================================================
-describe('sortNumDesc', () => {
+describe('sortNumbersDescending', () => {
   it('should sort numbers in descending order', () => {
-    expect(sortNumDesc([1, 3, 2])).toEqual([3, 2, 1])
+    expect(sortNumbersDescending([1, 3, 2])).toEqual([3, 2, 1])
   })
 
   it('should handle negative numbers', () => {
-    expect(sortNumDesc([-1, -3, 0, 2])).toEqual([2, 0, -1, -3])
+    expect(sortNumbersDescending([-1, -3, 0, 2])).toEqual([2, 0, -1, -3])
   })
 
   it('should handle empty array', () => {
-    expect(sortNumDesc([])).toEqual([])
+    expect(sortNumbersDescending([])).toEqual([])
   })
 
   it('should handle single element', () => {
-    expect(sortNumDesc([42])).toEqual([42])
+    expect(sortNumbersDescending([42])).toEqual([42])
   })
 
   it('should not mutate original', () => {
     const arr = [1, 3, 2]
-    const result = sortNumDesc(arr)
+    const result = sortNumbersDescending(arr)
     expect(arr).toEqual([1, 3, 2])
   })
 
   it('should handle duplicate values', () => {
-    expect(sortNumDesc([3, 1, 2, 1])).toEqual([3, 2, 1, 1])
+    expect(sortNumbersDescending([3, 1, 2, 1])).toEqual([3, 2, 1, 1])
   })
 })
 
 // ============================================================
-// sortByKey
+// sortNumbersByKey
 // ============================================================
-describe('sortByKey', () => {
+describe('sortNumbersByKey', () => {
   const arr = [{ age: 30 }, { age: 20 }, { age: 40 }]
 
   it('should sort ascending by default', () => {
-    const result = sortByKey(arr, 'age')
+    const result = sortNumbersByKey(arr, 'age')
     expect(result).toEqual([{ age: 20 }, { age: 30 }, { age: 40 }])
   })
 
   it('should sort ascending when explicitly specified', () => {
-    const result = sortByKey(arr, 'age', 'asc')
+    const result = sortNumbersByKey(arr, 'age', 'asc')
     expect(result).toEqual([{ age: 20 }, { age: 30 }, { age: 40 }])
   })
 
   it('should sort descending', () => {
-    const result = sortByKey(arr, 'age', 'desc')
+    const result = sortNumbersByKey(arr, 'age', 'desc')
     expect(result).toEqual([{ age: 40 }, { age: 30 }, { age: 20 }])
   })
 
   it('should not mutate original', () => {
     const original = [{ age: 30 }, { age: 20 }]
-    sortByKey(original, 'age')
+    sortNumbersByKey(original, 'age')
     expect(original).toEqual([{ age: 30 }, { age: 20 }])
   })
 
   it('should handle empty array', () => {
-    expect(sortByKey([], 'age')).toEqual([])
+    expect(sortNumbersByKey([], 'age')).toEqual([])
   })
 
   it('should handle single element', () => {
-    expect(sortByKey([{ age: 30 }], 'age')).toEqual([{ age: 30 }])
+    expect(sortNumbersByKey([{ age: 30 }], 'age')).toEqual([{ age: 30 }])
   })
 
   it('should handle string keys', () => {
     const data = [{ name: 'c' }, { name: 'a' }, { name: 'b' }]
     // Note: string subtraction results in NaN, sort order may be unstable
-    // This reveals a limitation: sortByKey works best with numeric values
+    // This reveals a limitation: sortNumbersByKey works best with numeric values
   })
 })
 
@@ -388,9 +388,9 @@ describe('flatten', () => {
 })
 
 // ============================================================
-// arrFind
+// findInArray
 // ============================================================
-describe('arrFind', () => {
+describe('findInArray', () => {
   const users = [
     { id: 1, name: 'a' },
     { id: 2, name: 'b' },
@@ -398,11 +398,11 @@ describe('arrFind', () => {
   ]
 
   it('should find first matching item by key and value', () => {
-    expect(arrFind(users, 'id', 2)).toEqual({ id: 2, name: 'b' })
+    expect(findInArray(users, 'id', 2)).toEqual({ id: 2, name: 'b' })
   })
 
   it('should return undefined when no match', () => {
-    expect(arrFind(users, 'id', 99)).toBeUndefined()
+    expect(findInArray(users, 'id', 99)).toBeUndefined()
   })
 
   it('should return first match when multiple exist', () => {
@@ -410,21 +410,21 @@ describe('arrFind', () => {
       { id: 1, name: 'a' },
       { id: 1, name: 'b' },
     ]
-    expect(arrFind(arr, 'id', 1)).toEqual({ id: 1, name: 'a' })
+    expect(findInArray(arr, 'id', 1)).toEqual({ id: 1, name: 'a' })
   })
 
   it('should handle empty array', () => {
-    expect(arrFind([], 'id', 1)).toBeUndefined()
+    expect(findInArray([], 'id', 1)).toBeUndefined()
   })
 
   it('should not mutate original array', () => {
     const arr = [{ id: 1, name: 'a' }]
-    arrFind(arr, 'id', 1)
+    findInArray(arr, 'id', 1)
     expect(arr).toEqual([{ id: 1, name: 'a' }])
   })
 
   it('should work with string values', () => {
-    expect(arrFind(users, 'name', 'c')).toEqual({ id: 3, name: 'c' })
+    expect(findInArray(users, 'name', 'c')).toEqual({ id: 3, name: 'c' })
   })
 })
 
@@ -491,35 +491,35 @@ describe('groupBy', () => {
 })
 
 // ============================================================
-// filterEmptyValues
+// omitEmptyValues
 // ============================================================
-describe('filterEmptyValues', () => {
+describe('omitEmptyValues', () => {
   it('should remove null, undefined, and empty string values', () => {
     const obj = { a: 1, b: '', c: null, d: undefined, e: 3 }
-    expect(filterEmptyValues(obj)).toEqual({ a: 1, e: 3 })
+    expect(omitEmptyValues(obj)).toEqual({ a: 1, e: 3 })
   })
 
   it('should keep falsy-but-valid values (0, false)', () => {
     const obj = { a: 0, b: false, c: '', d: null }
-    expect(filterEmptyValues(obj)).toEqual({ a: 0, b: false })
+    expect(omitEmptyValues(obj)).toEqual({ a: 0, b: false })
   })
 
   it('should handle empty object', () => {
-    expect(filterEmptyValues({})).toEqual({})
+    expect(omitEmptyValues({})).toEqual({})
   })
 
   it('should handle object with all valid values', () => {
     const obj = { a: 1, b: 'hello', c: true }
-    expect(filterEmptyValues(obj)).toEqual({ a: 1, b: 'hello', c: true })
+    expect(omitEmptyValues(obj)).toEqual({ a: 1, b: 'hello', c: true })
   })
 
   it('should handle object with all empty values', () => {
-    expect(filterEmptyValues({ a: '', b: null, c: undefined })).toEqual({})
+    expect(omitEmptyValues({ a: '', b: null, c: undefined })).toEqual({})
   })
 
   it('should not mutate original object', () => {
     const obj = { a: 1, b: '' }
-    filterEmptyValues(obj)
+    omitEmptyValues(obj)
     expect(obj).toEqual({ a: 1, b: '' })
   })
 })
@@ -958,25 +958,25 @@ describe('rotate', () => {
 })
 
 // ============================================================
-// intersects
+// hasIntersection
 // ============================================================
-describe('intersects', () => {
+describe('hasIntersection', () => {
   it('存在交集返回 true', () => {
-    expect(intersects([1, 2], [2, 3])).toBe(true)
+    expect(hasIntersection([1, 2], [2, 3])).toBe(true)
   })
 
   it('无交集或空数组返回 false', () => {
-    expect(intersects([1], [2])).toBe(false)
-    expect(intersects([], [1])).toBe(false)
+    expect(hasIntersection([1], [2])).toBe(false)
+    expect(hasIntersection([], [1])).toBe(false)
   })
 })
 
 // ============================================================
-// objectify
+// toObjectBy
 // ============================================================
-describe('objectify', () => {
+describe('toObjectBy', () => {
   it('按键与值取值函数构造对象', () => {
-    const result = objectify(
+    const result = toObjectBy(
       [{ id: 1, name: 'a' }, { id: 2, name: 'b' }],
       (item) => item.id,
       (item) => item.name,
@@ -985,30 +985,30 @@ describe('objectify', () => {
   })
 
   it('省略值取值函数时直接使用元素', () => {
-    expect(objectify([{ id: 1 }], (item) => item.id)).toEqual({ 1: { id: 1 } })
+    expect(toObjectBy([{ id: 1 }], (item) => item.id)).toEqual({ 1: { id: 1 } })
   })
 
   it('键冲突时后者覆盖前者', () => {
-    const result = objectify([{ id: 1, n: 'a' }, { id: 1, n: 'b' }], (item) => item.id, (item) => item.n)
+    const result = toObjectBy([{ id: 1, n: 'a' }, { id: 1, n: 'b' }], (item) => item.id, (item) => item.n)
     expect(result).toEqual({ 1: 'b' })
   })
 })
 
 // ============================================================
-// select
+// filterMap
 // ============================================================
-describe('select', () => {
+describe('filterMap', () => {
   it('先过滤再映射，仅遍历一次', () => {
-    expect(select([1, 2, 3, 4], (value) => value * value, (value) => value > 2))
+    expect(filterMap([1, 2, 3, 4], (value) => value > 2, (value) => value * value))
       .toEqual([9, 16])
   })
 
   it('判定函数可读取索引', () => {
-    expect(select(['a', 'b', 'c'], (value) => value.toUpperCase(), (_value, index) => index !== 1))
+    expect(filterMap(['a', 'b', 'c'], (_value, index) => index !== 1, (value) => value.toUpperCase()))
       .toEqual(['A', 'C'])
   })
 
   it('无元素通过时返回空数组', () => {
-    expect(select([1, 2], (value) => value, () => false)).toEqual([])
+    expect(filterMap([1, 2], () => false, (value) => value)).toEqual([])
   })
 })

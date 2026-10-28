@@ -44,14 +44,14 @@ export const uniqueByKey = <T extends Record<string, any>>(
  * @param arr - 待排序的数值数组
  * @returns 升序排列的新数组
  */
-export const sortNumAsc = (arr: number[]): number[] => [...arr].sort((a, b) => a - b)
+export const sortNumbersAscending = (arr: number[]): number[] => [...arr].sort((a, b) => a - b)
 
 /**
  * 数值数组降序排序（不会改变原数组）。
  * @param arr - 待排序的数值数组
  * @returns 降序排列的新数组
  */
-export const sortNumDesc = (arr: number[]): number[] => [...arr].sort((a, b) => b - a)
+export const sortNumbersDescending = (arr: number[]): number[] => [...arr].sort((a, b) => b - a)
 
 /**
  * 对象数组按指定数值属性排序。
@@ -61,7 +61,7 @@ export const sortNumDesc = (arr: number[]): number[] => [...arr].sort((a, b) => 
  * @param order - 排序方向，默认 `"asc"`（升序），可选 `"desc"`（降序）
  * @returns 排序后的新数组（不会修改原数组）
  */
-export const sortByKey = <T extends Record<string, any>>(
+export const sortNumbersByKey = <T extends Record<string, any>>(
   arr: T[],
   key: keyof T,
   order: "asc" | "desc" = "asc",
@@ -103,7 +103,7 @@ export const flatten = <T>(arr: any[], depth: number = 1): T[] => arr.flat(depth
  * @param value - 目标值
  * @returns 第一个匹配的元素，未找到时返回 `undefined`
  */
-export const arrFind = <T extends Record<string, any>>(
+export const findInArray = <T extends Record<string, any>>(
   arr: T[],
   key: keyof T,
   value: T[keyof T],
@@ -152,7 +152,7 @@ export function groupBy<T>(
  * @param obj - 待清理的对象
  * @returns 仅包含非空属性的新对象（原对象不会被修改）
  */
-export const filterEmptyValues = <T extends Record<string, any>>(
+export const omitEmptyValues = <T extends Record<string, any>>(
   obj: T,
 ): Partial<T> => {
   return Object.fromEntries(
@@ -578,7 +578,7 @@ export const rotate = <T>(arr: readonly T[], steps = 1): T[] => {
  * @param b - 第二个数组
  * @returns 存在任一相同元素返回 `true`
  */
-export const intersects = <T>(a: readonly T[], b: readonly T[]): boolean => {
+export const hasIntersection = <T>(a: readonly T[], b: readonly T[]): boolean => {
   const [small, large] = a.length <= b.length ? [a, b] : [b, a]
   const lookup = new Set(large)
   return small.some((item) => lookup.has(item))
@@ -595,7 +595,7 @@ export const intersects = <T>(a: readonly T[], b: readonly T[]): boolean => {
  * @returns 以 `getKey` 结果为键的新对象
  * @remarks 键冲突时后出现的元素覆盖先出现的。
  */
-export const objectify = <T, K extends PropertyKey, V = T>(
+export const toObjectBy = <T, K extends PropertyKey, V = T>(
   arr: readonly T[],
   getKey: (item: T) => K,
   getValue: (item: T) => V = (item) => item as unknown as V,
@@ -610,14 +610,14 @@ export const objectify = <T, K extends PropertyKey, V = T>(
  * @template T - 元素类型
  * @template R - 映射结果类型
  * @param arr - 源数组
- * @param mapper - 映射函数，仅对通过判定的元素调用
  * @param predicate - 判定函数，接收元素与索引
+ * @param mapper - 映射函数，仅对通过判定的元素调用
  * @returns 通过判定并完成映射的新数组
  */
-export const select = <T, R>(
+export const filterMap = <T, R>(
   arr: readonly T[],
-  mapper: (item: T, index: number) => R,
   predicate: (item: T, index: number) => boolean,
+  mapper: (item: T, index: number) => R,
 ): R[] => {
   const result: R[] = []
   arr.forEach((item, index) => {

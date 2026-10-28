@@ -4,7 +4,7 @@
  * @param key - 存储键名
  * @returns 反序列化后的值；键不存在返回 `null`；若内容非 JSON 则原样返回字符串
  */
-export const localGet = <T = any>(key: string): T | null => {
+export const getLocalStorage = <T = any>(key: string): T | null => {
   const value = localStorage.getItem(key);
   if (value === null) return null;
   try {
@@ -20,7 +20,7 @@ export const localGet = <T = any>(key: string): T | null => {
  * @param value - 任意可序列化的值
  * @returns 无返回值
  */
-export const localSet = (key: string, value: unknown): void => {
+export const setLocalStorage = (key: string, value: unknown): void => {
   localStorage.setItem(key, JSON.stringify(value));
 };
 
@@ -29,7 +29,7 @@ export const localSet = (key: string, value: unknown): void => {
  * @param key - 要移除的键名
  * @returns 无返回值
  */
-export const localRm = (key: string): void => {
+export const removeLocalStorage = (key: string): void => {
   localStorage.removeItem(key);
 };
 
@@ -37,6 +37,6 @@ export const localRm = (key: string): void => {
  * 清空当前域下的全部 `localStorage`。
  * @returns 无返回值
  */
-export const localClear = (): void => {
+export const clearLocalStorage = (): void => {
   localStorage.clear();
 };

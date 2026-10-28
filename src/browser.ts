@@ -14,7 +14,7 @@ const resolveUrl = (url?: string): URL => {
  * @param url - 可选的目标 URL，支持相对路径；省略时使用当前页面地址
  * @returns 以参数名为键、参数值为值的对象（值均为字符串）
  */
-export const getUrlParams = (url?: string): Record<string, string> =>
+export const getURLParams = (url?: string): Record<string, string> =>
   Object.fromEntries(resolveUrl(url).searchParams);
 
 /**
@@ -23,7 +23,7 @@ export const getUrlParams = (url?: string): Record<string, string> =>
  * @param url - 可选的目标 URL；省略时使用当前页面地址
  * @returns 参数值字符串，不存在时返回 `null`
  */
-export const getUrlParam = (key: string, url?: string): string | null =>
+export const getURLParam = (key: string, url?: string): string | null =>
   resolveUrl(url).searchParams.get(key);
 
 /**

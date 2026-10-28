@@ -1,9 +1,4 @@
 /**
- * 异步执行控制工具集合。
- * @packageDocumentation
- */
-
-/**
  * `retry` 的可选配置。
  */
 export interface RetryOptions {
@@ -67,7 +62,7 @@ export const retry = async <T>(
  * @returns 与输入顺序一致的结果数组
  * @remarks 任一任务失败会立即抛出该错误，其余已启动任务不会被取消。
  */
-export const parallel = async <T, R>(
+export const parallelMap = async <T, R>(
   items: readonly T[],
   fn: (item: T, index: number) => Promise<R>,
   limit: number = Number.POSITIVE_INFINITY,

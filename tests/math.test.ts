@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { clamp, randomInt, randomFloat, round, sum, average, inRange, lerp, toInt, toFloat } from '../src/math'
+import { clamp, randomInteger, randomFloat, round, sum, average, inRange, lerp, toInteger, toFloat } from '../src/math'
 
 // ============================================================
 // clamp
@@ -41,29 +41,29 @@ describe('clamp', () => {
 })
 
 // ============================================================
-// randomInt
+// randomInteger
 // ============================================================
-describe('randomInt', () => {
+describe('randomInteger', () => {
   it('返回整数', () => {
-    const val = randomInt(1, 10)
+    const val = randomInteger(1, 10)
     expect(Number.isInteger(val)).toBe(true)
   })
 
   it('返回值在 [min, max] 区间内', () => {
     for (let i = 0; i < 100; i++) {
-      const val = randomInt(1, 5)
+      const val = randomInteger(1, 5)
       expect(val).toBeGreaterThanOrEqual(1)
       expect(val).toBeLessThanOrEqual(5)
     }
   })
 
   it('min 等于 max 时返回该值', () => {
-    expect(randomInt(7, 7)).toBe(7)
+    expect(randomInteger(7, 7)).toBe(7)
   })
 
   it('min 大于 max 时自动交换', () => {
     for (let i = 0; i < 50; i++) {
-      const val = randomInt(10, -5)
+      const val = randomInteger(10, -5)
       expect(val).toBeGreaterThanOrEqual(-5)
       expect(val).toBeLessThanOrEqual(10)
     }
@@ -72,7 +72,7 @@ describe('randomInt', () => {
   it('能够返回边界值', () => {
     const results = new Set<number>()
     for (let i = 0; i < 200; i++) {
-      results.add(randomInt(1, 3))
+      results.add(randomInteger(1, 3))
     }
     // 在大样本下应覆盖到 1、2、3
     expect(results.has(1)).toBe(true)
@@ -82,7 +82,7 @@ describe('randomInt', () => {
 
   it('处理负数范围', () => {
     for (let i = 0; i < 50; i++) {
-      const val = randomInt(-10, -1)
+      const val = randomInteger(-10, -1)
       expect(val).toBeGreaterThanOrEqual(-10)
       expect(val).toBeLessThanOrEqual(-1)
     }
@@ -292,26 +292,26 @@ describe('round precision', () => {
 })
 
 // ============================================================
-// toInt
+// toInteger
 // ============================================================
-describe('toInt', () => {
+describe('toInteger', () => {
   it('解析整数', () => {
-    expect(toInt('42')).toBe(42)
-    expect(toInt(42)).toBe(42)
+    expect(toInteger('42')).toBe(42)
+    expect(toInteger(42)).toBe(42)
   })
 
   it('截断小数部分', () => {
-    expect(toInt('42.9')).toBe(42)
+    expect(toInteger('42.9')).toBe(42)
   })
 
   it('支持进制参数', () => {
-    expect(toInt('ff', 16)).toBe(255)
+    expect(toInteger('ff', 16)).toBe(255)
   })
 
   it('无法解析时返回 0', () => {
-    expect(toInt('abc')).toBe(0)
-    expect(toInt(null)).toBe(0)
-    expect(toInt(Symbol('x'))).toBe(0)
+    expect(toInteger('abc')).toBe(0)
+    expect(toInteger(null)).toBe(0)
+    expect(toInteger(Symbol('x'))).toBe(0)
   })
 })
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { localGet, localSet, localRm, localClear } from '../src/storage'
+import { getLocalStorage, setLocalStorage, removeLocalStorage, clearLocalStorage } from '../src/storage'
 
 // Clear localStorage before each test
 beforeEach(() => {
@@ -7,109 +7,109 @@ beforeEach(() => {
 })
 
 // ============================================================
-// localSet & localGet
+// setLocalStorage & getLocalStorage
 // ============================================================
-describe('localSet & localGet', () => {
+describe('setLocalStorage & getLocalStorage', () => {
   it('should set and get string values', () => {
-    localSet('name', '张三')
-    expect(localGet('name')).toBe('张三')
+    setLocalStorage('name', '张三')
+    expect(getLocalStorage('name')).toBe('张三')
   })
 
   it('should set and get number values', () => {
-    localSet('count', 42)
-    expect(localGet('count')).toBe(42)
+    setLocalStorage('count', 42)
+    expect(getLocalStorage('count')).toBe(42)
   })
 
   it('should set and get object values', () => {
     const user = { name: '张三', age: 30 }
-    localSet('user', user)
-    const result = localGet('user')
+    setLocalStorage('user', user)
+    const result = getLocalStorage('user')
     expect(result).toEqual(user)
   })
 
   it('should set and get array values', () => {
-    localSet('items', [1, 2, 3])
-    expect(localGet('items')).toEqual([1, 2, 3])
+    setLocalStorage('items', [1, 2, 3])
+    expect(getLocalStorage('items')).toEqual([1, 2, 3])
   })
 
   it('should set and get boolean values', () => {
-    localSet('flag', true)
-    expect(localGet('flag')).toBe(true)
-    localSet('flag', false)
-    expect(localGet('flag')).toBe(false)
+    setLocalStorage('flag', true)
+    expect(getLocalStorage('flag')).toBe(true)
+    setLocalStorage('flag', false)
+    expect(getLocalStorage('flag')).toBe(false)
   })
 
   it('should set and get null values', () => {
-    localSet('nothing', null)
-    expect(localGet('nothing')).toBe(null)
+    setLocalStorage('nothing', null)
+    expect(getLocalStorage('nothing')).toBe(null)
   })
 
   it('should set and get nested objects', () => {
     const data = { a: { b: { c: 1 } } }
-    localSet('nested', data)
-    expect(localGet('nested')).toEqual(data)
+    setLocalStorage('nested', data)
+    expect(getLocalStorage('nested')).toEqual(data)
   })
 
   it('should return null for non-existent keys', () => {
-    expect(localGet('nonexistent')).toBe(null)
+    expect(getLocalStorage('nonexistent')).toBe(null)
   })
 
   it('should overwrite existing values', () => {
-    localSet('key', 'old')
-    localSet('key', 'new')
-    expect(localGet('key')).toBe('new')
+    setLocalStorage('key', 'old')
+    setLocalStorage('key', 'new')
+    expect(getLocalStorage('key')).toBe('new')
   })
 
   it('should return raw string when JSON.parse fails', () => {
     localStorage.setItem('raw', 'not-json{{{')
-    // localGet returns the raw string since JSON.parse throws
-    const result = localGet('raw')
+    // getLocalStorage returns the raw string since JSON.parse throws
+    const result = getLocalStorage('raw')
     expect(result).toBe('not-json{{{')
   })
 })
 
 // ============================================================
-// localRm
+// removeLocalStorage
 // ============================================================
-describe('localRm', () => {
+describe('removeLocalStorage', () => {
   it('should remove a stored key', () => {
-    localSet('temp', 'value')
-    expect(localGet('temp')).toBe('value')
+    setLocalStorage('temp', 'value')
+    expect(getLocalStorage('temp')).toBe('value')
 
-    localRm('temp')
-    expect(localGet('temp')).toBe(null)
+    removeLocalStorage('temp')
+    expect(getLocalStorage('temp')).toBe(null)
   })
 
   it('should not throw when removing non-existent key', () => {
-    expect(() => localRm('nonexistent')).not.toThrow()
+    expect(() => removeLocalStorage('nonexistent')).not.toThrow()
   })
 
   it('should not affect other keys', () => {
-    localSet('a', 1)
-    localSet('b', 2)
-    localRm('a')
-    expect(localGet('a')).toBe(null)
-    expect(localGet('b')).toBe(2)
+    setLocalStorage('a', 1)
+    setLocalStorage('b', 2)
+    removeLocalStorage('a')
+    expect(getLocalStorage('a')).toBe(null)
+    expect(getLocalStorage('b')).toBe(2)
   })
 })
 
 // ============================================================
-// localClear
+// clearLocalStorage
 // ============================================================
-describe('localClear', () => {
+describe('clearLocalStorage', () => {
   it('should clear all stored values', () => {
-    localSet('a', 1)
-    localSet('b', 2)
-    localSet('c', 3)
+    setLocalStorage('a', 1)
+    setLocalStorage('b', 2)
+    setLocalStorage('c', 3)
 
-    localClear()
+    clearLocalStorage()
 
-    expect(localGet('a')).toBe(null)
-    expect(localGet('b')).toBe(null)
-    expect(localGet('c')).toBe(null)
+    expect(getLocalStorage('a')).toBe(null)
+    expect(getLocalStorage('b')).toBe(null)
+    expect(getLocalStorage('c')).toBe(null)
   })
 
   it('should not throw on empty storage', () => {
-    expect(() => localClear()).not.toThrow()
+    expect(() => clearLocalStorage()).not.toThrow()
   })
 })

@@ -1,180 +1,180 @@
 import { describe, it, expect } from 'vitest'
-import { randomString, uuid, escapeHtml, unescapeHtml, stripHtml, ensurePrefix, ensureSuffix, removePrefix, removeSuffix, byteSize, maskName, words, camelCase, pascalCase, snakeCase, kebabCase, deburr, escapeRegExp, template, titleCase } from '../src/string'
+import { generateRandomString, generateUUID, escapeHTML, unescapeHTML, stripHTML, ensurePrefix, ensureSuffix, removePrefix, removeSuffix, byteSize, maskName, splitWords, camelCase, pascalCase, snakeCase, kebabCase, deburr, escapeRegExp, renderTemplate, titleCase } from '../src/string'
 
 // ============================================================
-// randomString
+// generateRandomString
 // ============================================================
-describe('randomString', () => {
+describe('generateRandomString', () => {
   it('默认返回长度为 8 的字符串', () => {
-    expect(randomString()).toHaveLength(8)
+    expect(generateRandomString()).toHaveLength(8)
   })
 
   it('返回指定长度的字符串', () => {
-    expect(randomString(16)).toHaveLength(16)
-    expect(randomString(4)).toHaveLength(4)
+    expect(generateRandomString(16)).toHaveLength(16)
+    expect(generateRandomString(4)).toHaveLength(4)
   })
 
   it('只包含字母和数字', () => {
     for (let i = 0; i < 20; i++) {
-      expect(randomString(100)).toMatch(/^[A-Za-z0-9]+$/)
+      expect(generateRandomString(100)).toMatch(/^[A-Za-z0-9]+$/)
     }
   })
 
   it('长度为 0 时返回空字符串', () => {
-    expect(randomString(0)).toBe('')
+    expect(generateRandomString(0)).toBe('')
   })
 
   it('每次调用返回不同值', () => {
     const results = new Set<string>()
     for (let i = 0; i < 20; i++) {
-      results.add(randomString(32))
+      results.add(generateRandomString(32))
     }
     expect(results.size).toBe(20)
   })
 })
 
 // ============================================================
-// uuid
+// generateUUID
 // ============================================================
-describe('uuid', () => {
+describe('generateUUID', () => {
   it('返回 UUID v4 格式字符串', () => {
-    expect(uuid()).toMatch(
+    expect(generateUUID()).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
     )
   })
 
   it('长度为 36', () => {
-    expect(uuid()).toHaveLength(36)
+    expect(generateUUID()).toHaveLength(36)
   })
 
   it('每次调用返回不同值', () => {
     const results = new Set<string>()
     for (let i = 0; i < 100; i++) {
-      results.add(uuid())
+      results.add(generateUUID())
     }
     expect(results.size).toBe(100)
   })
 
   it('第 15 位始终是 4', () => {
     for (let i = 0; i < 50; i++) {
-      expect(uuid().charAt(14)).toBe('4')
+      expect(generateUUID().charAt(14)).toBe('4')
     }
   })
 
   it('第 20 位是 8/9/a/b', () => {
     for (let i = 0; i < 50; i++) {
-      const variant = uuid().charAt(19)
+      const variant = generateUUID().charAt(19)
       expect(['8', '9', 'a', 'b']).toContain(variant)
     }
   })
 })
 
 // ============================================================
-// escapeHtml
+// escapeHTML
 // ============================================================
-describe('escapeHtml', () => {
+describe('escapeHTML', () => {
   it('转义 & 符号', () => {
-    expect(escapeHtml('a & b')).toBe('a &amp; b')
+    expect(escapeHTML('a & b')).toBe('a &amp; b')
   })
 
   it('转义 < 符号', () => {
-    expect(escapeHtml('a < b')).toBe('a &lt; b')
+    expect(escapeHTML('a < b')).toBe('a &lt; b')
   })
 
   it('转义 > 符号', () => {
-    expect(escapeHtml('a > b')).toBe('a &gt; b')
+    expect(escapeHTML('a > b')).toBe('a &gt; b')
   })
 
   it('转义双引号', () => {
-    expect(escapeHtml('a "b"')).toBe('a &quot;b&quot;')
+    expect(escapeHTML('a "b"')).toBe('a &quot;b&quot;')
   })
 
   it('转义单引号', () => {
-    expect(escapeHtml("a 'b'")).toBe('a &#39;b&#39;')
+    expect(escapeHTML("a 'b'")).toBe('a &#39;b&#39;')
   })
 
   it('同时转义多种字符', () => {
-    expect(escapeHtml('<div class="a">&</div>')).toBe(
+    expect(escapeHTML('<div class="a">&</div>')).toBe(
       '&lt;div class=&quot;a&quot;&gt;&amp;&lt;/div&gt;'
     )
   })
 
   it('无特殊字符时返回原字符串', () => {
-    expect(escapeHtml('hello world')).toBe('hello world')
+    expect(escapeHTML('hello world')).toBe('hello world')
   })
 
   it('空字符串返回空字符串', () => {
-    expect(escapeHtml('')).toBe('')
+    expect(escapeHTML('')).toBe('')
   })
 })
 
 // ============================================================
-// unescapeHtml
+// unescapeHTML
 // ============================================================
-describe('unescapeHtml', () => {
+describe('unescapeHTML', () => {
   it('反转义 &amp;', () => {
-    expect(unescapeHtml('a &amp; b')).toBe('a & b')
+    expect(unescapeHTML('a &amp; b')).toBe('a & b')
   })
 
   it('反转义 &lt;', () => {
-    expect(unescapeHtml('a &lt; b')).toBe('a < b')
+    expect(unescapeHTML('a &lt; b')).toBe('a < b')
   })
 
   it('反转义 &gt;', () => {
-    expect(unescapeHtml('a &gt; b')).toBe('a > b')
+    expect(unescapeHTML('a &gt; b')).toBe('a > b')
   })
 
   it('反转义 &quot;', () => {
-    expect(unescapeHtml('a &quot;b&quot;')).toBe('a "b"')
+    expect(unescapeHTML('a &quot;b&quot;')).toBe('a "b"')
   })
 
   it('反转义 &#39;', () => {
-    expect(unescapeHtml("a &#39;b&#39;")).toBe("a 'b'")
+    expect(unescapeHTML("a &#39;b&#39;")).toBe("a 'b'")
   })
 
   it('反转义多种实体', () => {
-    expect(unescapeHtml('&lt;div class=&quot;a&quot;&gt;&amp;&lt;/div&gt;')).toBe(
+    expect(unescapeHTML('&lt;div class=&quot;a&quot;&gt;&amp;&lt;/div&gt;')).toBe(
       '<div class="a">&</div>'
     )
   })
 
   it('无实体时返回原字符串', () => {
-    expect(unescapeHtml('hello world')).toBe('hello world')
+    expect(unescapeHTML('hello world')).toBe('hello world')
   })
 
-  it('escapeHtml 与 unescapeHtml 可逆', () => {
+  it('escapeHTML 与 unescapeHTML 可逆', () => {
     const original = '<script>alert("xss & attack")</script>'
-    expect(unescapeHtml(escapeHtml(original))).toBe(original)
+    expect(unescapeHTML(escapeHTML(original))).toBe(original)
   })
 })
 
 // ============================================================
-// stripHtml
+// stripHTML
 // ============================================================
-describe('stripHtml', () => {
+describe('stripHTML', () => {
   it('去除简单标签', () => {
-    expect(stripHtml('<p>hello</p>')).toBe('hello')
+    expect(stripHTML('<p>hello</p>')).toBe('hello')
   })
 
   it('去除嵌套标签', () => {
-    expect(stripHtml('<div><span>text</span></div>')).toBe('text')
+    expect(stripHTML('<div><span>text</span></div>')).toBe('text')
   })
 
   it('去除带属性的标签', () => {
-    expect(stripHtml('<a href="url">link</a>')).toBe('link')
+    expect(stripHTML('<a href="url">link</a>')).toBe('link')
   })
 
   it('无标签时返回原字符串', () => {
-    expect(stripHtml('plain text')).toBe('plain text')
+    expect(stripHTML('plain text')).toBe('plain text')
   })
 
   it('空字符串返回空字符串', () => {
-    expect(stripHtml('')).toBe('')
+    expect(stripHTML('')).toBe('')
   })
 
   it('去除自闭合标签', () => {
-    expect(stripHtml('hello<br/>world')).toBe('helloworld')
-    expect(stripHtml('hello<img src="x" />world')).toBe('helloworld')
+    expect(stripHTML('hello<br/>world')).toBe('helloworld')
+    expect(stripHTML('hello<img src="x" />world')).toBe('helloworld')
   })
 })
 
@@ -342,19 +342,19 @@ describe('maskName', () => {
 })
 
 // ============================================================
-// words
+// splitWords
 // ============================================================
-describe('words', () => {
+describe('splitWords', () => {
   it('按常见分隔符拆分', () => {
-    expect(words('fooBar baz-qux_quux2')).toEqual(['foo', 'Bar', 'baz', 'qux', 'quux', '2'])
+    expect(splitWords('fooBar baz-qux_quux2')).toEqual(['foo', 'Bar', 'baz', 'qux', 'quux', '2'])
   })
 
   it('拆分连续大写缩写', () => {
-    expect(words('XMLHttpRequest')).toEqual(['XML', 'Http', 'Request'])
+    expect(splitWords('XMLHttpRequest')).toEqual(['XML', 'Http', 'Request'])
   })
 
   it('空字符串返回空数组', () => {
-    expect(words('')).toEqual([])
+    expect(splitWords('')).toEqual([])
   })
 })
 
@@ -418,28 +418,28 @@ describe('escapeRegExp', () => {
 })
 
 // ============================================================
-// template
+// renderTemplate
 // ============================================================
-describe('template', () => {
+describe('renderTemplate', () => {
   it('替换默认 {{key}} 占位符', () => {
-    expect(template('Hello, {{name}}!', { name: 'Ray' })).toBe('Hello, Ray!')
+    expect(renderTemplate('Hello, {{name}}!', { name: 'Ray' })).toBe('Hello, Ray!')
   })
 
   it('支持占位符内空白', () => {
-    expect(template('{{ name }}', { name: 'Ray' })).toBe('Ray')
+    expect(renderTemplate('{{ name }}', { name: 'Ray' })).toBe('Ray')
   })
 
   it('缺失或空值替换为空字符串', () => {
-    expect(template('a{{missing}}b', {})).toBe('ab')
-    expect(template('a{{value}}b', { value: null })).toBe('ab')
+    expect(renderTemplate('a{{missing}}b', {})).toBe('ab')
+    expect(renderTemplate('a{{value}}b', { value: null })).toBe('ab')
   })
 
   it('数值与布尔值转为字符串', () => {
-    expect(template('{{n}}-{{b}}', { n: 1, b: false })).toBe('1-false')
+    expect(renderTemplate('{{n}}-{{b}}', { n: 1, b: false })).toBe('1-false')
   })
 
   it('支持自定义模式', () => {
-    expect(template('Hello, <name>', { name: 'Ray' }, /<(.+?)>/g)).toBe('Hello, Ray')
+    expect(renderTemplate('Hello, <name>', { name: 'Ray' }, /<(.+?)>/g)).toBe('Hello, Ray')
   })
 })
 

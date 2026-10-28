@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
-import { sleep, retry, parallel } from '../src/async'
+import { sleep, retry, parallelMap } from '../src/async'
 
 afterEach(() => {
   vi.useRealTimers()
@@ -124,18 +124,18 @@ describe('retry', () => {
 })
 
 // ============================================================
-// parallel
+// parallelMap
 // ============================================================
-describe('parallel', () => {
+describe('parallelMap', () => {
   it('保持输入顺序', async () => {
-    const result = await parallel([1, 2, 3], async (value) => value * 2, 2)
+    const result = await parallelMap([1, 2, 3], async (value) => value * 2, 2)
     expect(result).toEqual([2, 4, 6])
   })
 
   it('限制最大并发数', async () => {
     let active = 0
     let max = 0
-    const result = await parallel([1, 2, 3, 4, 5], async (value) => {
+    const result = await parallelMap([1, 2, 3, 4, 5], async (value) => {
       active++
       max = Math.max(max, active)
       await new Promise((resolve) => setTimeout(resolve, 5))
@@ -151,7 +151,7 @@ describe('parallel', () => {
   it('并发数小于 1 时按 1 处理', async () => {
     let active = 0
     let max = 0
-    await parallel([1, 2, 3], async () => {
+    await parallelMap([1, 2, 3], async () => {
       active++
       max = Math.max(max, active)
       await new Promise((resolve) => setTimeout(resolve, 1))
@@ -161,11 +161,11 @@ describe('parallel', () => {
   })
 
   it('空数组返回空数组', async () => {
-    await expect(parallel([], async () => 1)).resolves.toEqual([])
+    await expect(parallelMap([], async () => 1)).resolves.toEqual([])
   })
 
   it('任务失败时抛出错误', async () => {
-    await expect(parallel([1], async () => {
+    await expect(parallelMap([1], async () => {
       throw new Error('x')
     })).rejects.toThrow('x')
   })

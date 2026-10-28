@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { once, memoize, pipe, compose, partial, attempt, chain, guard } from '../src/function'
+import { once, memoize, pipe, compose, partial, attempt, tryOrUndefined } from '../src/function'
 
 // ============================================================
 // once
@@ -73,6 +73,14 @@ describe('pipe', () => {
       (value: number) => value * 2,
     )
     expect(transform(3)).toBe(8)
+  })
+
+  it('首个函数可接收多个参数', () => {
+    const transform = pipe(
+      (a: number, b: number) => a + b,
+      (value: number) => value * 2,
+    )
+    expect(transform(1, 2)).toBe(6)
   })
 
   it('支持三个函数', () => {
@@ -170,53 +178,30 @@ describe('attempt async & args', () => {
   })
 })
 
-// ============================================================
-// chain
-// ============================================================
-describe('chain', () => {
-  it('第一个函数接收全部初始参数', () => {
-    const fn = chain((a: number, b: number) => a + b, (sum) => sum * 2)
-    expect(fn(1, 2)).toBe(6)
-  })
-
-  it('支持三步与四步串联', () => {
-    expect(chain((a: number) => a + 1, (value) => value * 2, (value) => String(value))(3)).toBe('8')
-    expect(chain(
-      (a: number) => a + 1,
-      (value) => value * 2,
-      (value) => String(value),
-      (value) => `#${value}`,
-    )(3)).toBe('#8')
-  })
-
-  it('无函数时抛出 TypeError', () => {
-    expect(() => (chain as any)()).toThrow(TypeError)
-  })
-})
 
 // ============================================================
-// guard
+// tryOrUndefined
 // ============================================================
-describe('guard', () => {
+describe('tryOrUndefined', () => {
   it('成功时返回结果', () => {
-    expect(guard(() => 42)).toBe(42)
+    expect(tryOrUndefined(() => 42)).toBe(42)
   })
 
   it('同步异常返回 undefined', () => {
-    expect(guard(() => {
+    expect(tryOrUndefined(() => {
       throw new Error('x')
     })).toBeUndefined()
   })
 
   it('shouldGuard 返回 false 时重新抛出', () => {
-    expect(() => guard(() => {
+    expect(() => tryOrUndefined(() => {
       throw new Error('x')
     }, () => false)).toThrow('x')
   })
 
   it('异步成功与失败', async () => {
-    await expect(guard(async () => 1)).resolves.toBe(1)
-    await expect(guard(async () => {
+    await expect(tryOrUndefined(async () => 1)).resolves.toBe(1)
+    await expect(tryOrUndefined(async () => {
       throw new Error('x')
     })).resolves.toBeUndefined()
   })

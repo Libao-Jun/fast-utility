@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { setCookie, getCookie, delCookie } from '../src/cookie'
+import { setCookie, getCookie, removeCookie } from '../src/cookie'
 
 // Clear cookies before each test by setting them to expire
 beforeEach(() => {
@@ -79,21 +79,21 @@ describe('setCookie expiration', () => {
 })
 
 // ============================================================
-// delCookie
+// removeCookie
 // ============================================================
-describe('delCookie', () => {
+describe('removeCookie', () => {
   it('should delete a cookie', () => {
     setCookie('token', 'abc123', 7)
     expect(getCookie('token')).toBe('abc123')
 
-    delCookie('token')
+    removeCookie('token')
     // After deletion, cookie should be expired
     // In jsdom, expired cookies are still readable until a new one with same name is set
     // The key behavior: no error when deleting, and value should be cleared
   })
 
   it('should not throw when deleting non-existent cookie', () => {
-    expect(() => delCookie('nonexistent')).not.toThrow()
+    expect(() => removeCookie('nonexistent')).not.toThrow()
   })
 })
 

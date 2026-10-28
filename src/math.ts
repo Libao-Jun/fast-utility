@@ -19,7 +19,7 @@ export const clamp = (value: number, min: number, max: number): number => {
  * @param max - 最大边界（含）
  * @returns 随机整数
  */
-export const randomInt = (min: number, max: number): number => {
+export const randomInteger = (min: number, max: number): number => {
   [min, max] = _swap(min, max)
   const lower = Math.ceil(min)
   const upper = Math.floor(max)
@@ -131,7 +131,7 @@ export const lerp = (start: number, end: number, t: number): number => start + (
  * @returns 解析出的整数；无法解析时返回 `0`
  * @remarks 语义等价于 `Number.parseInt`，但把 `NaN` 统一为 `0`，调用方无需重复判空。
  */
-export const toInt = (value: unknown, radix: number = 10): number => {
+export const toInteger = (value: unknown, radix: number = 10): number => {
   const result = Number.parseInt(String(value), radix)
   return Number.isNaN(result) ? 0 : result
 }

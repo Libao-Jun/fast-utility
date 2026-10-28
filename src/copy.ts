@@ -47,7 +47,7 @@ export function deepClone<T>(obj: T, hash = new WeakMap<any, any>()): T {
  * @returns 深拷贝结果
  * @remarks 会丢失 `Date` / `Map` / `Set` / `function` / `undefined` 等类型（如 `Date` 会变成字符串）。
  */
-export const deepCloneWithJSON = <T>(obj: T): T => JSON.parse(JSON.stringify(obj))
+export const cloneWithJSON = <T>(obj: T): T => JSON.parse(JSON.stringify(obj))
 
 /**
  * 基于原生 `structuredClone` 的深拷贝。
@@ -57,7 +57,7 @@ export const deepCloneWithJSON = <T>(obj: T): T => JSON.parse(JSON.stringify(obj
  * @returns 深拷贝结果
  * @remarks 环境需支持 `structuredClone`（现代浏览器 / Node 17+）。
  */
-export const structClone = <T>(obj: T, options?: StructuredSerializeOptions): T => structuredClone(obj, options)
+export const cloneStructured = <T>(obj: T, options?: StructuredSerializeOptions): T => structuredClone(obj, options)
 
 /**
  * 浅拷贝：仅复制第一层，嵌套对象仍为引用共享。

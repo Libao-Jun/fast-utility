@@ -248,7 +248,7 @@ export const set = <T extends object>(
  * @returns 以路径字符串为键的新对象
  * @remarks 数组下标以数字段表示（如 `list.0.name`）；空对象 / 空数组按叶子值保留。
  */
-export const crush = (
+export const flattenObject = (
   obj: object,
   separator = ".",
 ): Record<string, unknown> => {
@@ -283,13 +283,13 @@ export const crush = (
 }
 
 /**
- * 把「路径 → 值」的单层对象还原为嵌套结构（`crush` 的逆操作）。
+ * 把「路径 → 值」的单层对象还原为嵌套结构（`flattenObject` 的逆操作）。
  * @param obj - 以路径字符串为键的对象
  * @param separator - 路径分隔符，默认 `"."`
  * @returns 还原后的嵌套对象
  * @remarks 数字段会自动创建数组；包含 `__proto__`、`constructor`、`prototype` 的路径会被跳过。
  */
-export const construct = (
+export const unflattenObject = (
   obj: Record<string, unknown>,
   separator = ".",
 ): Record<string, any> => {

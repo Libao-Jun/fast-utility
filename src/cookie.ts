@@ -28,6 +28,6 @@ export const getCookie = (name: string): string | null => {
  * @param name - 要删除的 Cookie 名称
  * @returns 无返回值
  */
-export const delCookie = (name: string): void => {
+export const removeCookie = (name: string): void => {
   setCookie(name, "", -1);
 };

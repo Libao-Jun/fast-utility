@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import {
-  getUrlParams,
-  getUrlParam,
+  getURLParams,
+  getURLParam,
   toQueryString,
   copyToClipboard,
   downloadFile,
@@ -13,68 +13,68 @@ import {
 } from '../src/browser'
 
 // ============================================================
-// getUrlParams
+// getURLParams
 // ============================================================
-describe('getUrlParams', () => {
+describe('getURLParams', () => {
   it('should parse URL params from given URL', () => {
-    const params = getUrlParams('https://example.com?a=1&b=2')
+    const params = getURLParams('https://example.com?a=1&b=2')
     expect(params).toEqual({ a: '1', b: '2' })
   })
 
   it('should handle URL without params', () => {
-    const params = getUrlParams('https://example.com')
+    const params = getURLParams('https://example.com')
     expect(params).toEqual({})
   })
 
   it('should handle URL with single param', () => {
-    const params = getUrlParams('https://example.com?key=value')
+    const params = getURLParams('https://example.com?key=value')
     expect(params).toEqual({ key: 'value' })
   })
 
   it('should handle encoded params', () => {
-    const params = getUrlParams('https://example.com?name=%E5%BC%A0%E4%B8%89')
+    const params = getURLParams('https://example.com?name=%E5%BC%A0%E4%B8%89')
     expect(params.name).toBe('张三')
   })
 
   it('should use current page URL when no arg provided', () => {
     // In jsdom, window.location.href is something like "about:blank"
-    const params = getUrlParams()
+    const params = getURLParams()
     expect(params).toBeDefined()
     expect(typeof params).toBe('object')
   })
 
   it('should handle empty param values', () => {
-    const params = getUrlParams('https://example.com?a=&b=2')
+    const params = getURLParams('https://example.com?a=&b=2')
     expect(params.a).toBe('')
     expect(params.b).toBe('2')
   })
 
   it('should handle duplicate params (last wins)', () => {
-    const params = getUrlParams('https://example.com?a=1&a=2')
+    const params = getURLParams('https://example.com?a=1&a=2')
     expect(params.a).toBe('2')
   })
 })
 
 // ============================================================
-// getUrlParam
+// getURLParam
 // ============================================================
-describe('getUrlParam', () => {
+describe('getURLParam', () => {
   it('should get single URL param', () => {
-    expect(getUrlParam('a', 'https://example.com?a=1')).toBe('1')
+    expect(getURLParam('a', 'https://example.com?a=1')).toBe('1')
   })
 
   it('should return null for missing param', () => {
-    expect(getUrlParam('missing', 'https://example.com?a=1')).toBe(null)
+    expect(getURLParam('missing', 'https://example.com?a=1')).toBe(null)
   })
 
   it('should use current page URL when no url arg provided', () => {
-    const result = getUrlParam('test')
+    const result = getURLParam('test')
     expect(result).toBe(null) // about:blank has no params
   })
 
   it('should handle encoded param name', () => {
     const url = 'https://example.com?name=value'
-    expect(getUrlParam('name', url)).toBe('value')
+    expect(getURLParam('name', url)).toBe('value')
   })
 })
 
@@ -507,11 +507,11 @@ describe('observeIntersection', () => {
 // relative URL support
 // ============================================================
 describe('relative URL support', () => {
-  it('getUrlParams 支持相对路径', () => {
-    expect(getUrlParams('?a=1&b=2')).toEqual({ a: '1', b: '2' })
+  it('getURLParams 支持相对路径', () => {
+    expect(getURLParams('?a=1&b=2')).toEqual({ a: '1', b: '2' })
   })
 
-  it('getUrlParam 支持相对路径', () => {
-    expect(getUrlParam('a', '?a=1')).toBe('1')
+  it('getURLParam 支持相对路径', () => {
+    expect(getURLParam('a', '?a=1')).toBe('1')
   })
 })

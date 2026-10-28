@@ -54,7 +54,7 @@ export const memoize = <T extends (...args: any[]) => any>(
  * @param f1 - 第一个执行的函数
  * @returns 组合后的函数
  */
-export function pipe<A, B>(f1: (a: A) => B): (a: A) => B
+export function pipe<A extends any[], B>(f1: (...args: A) => B): (...args: A) => B
 /**
  * 从左到右组合函数：`pipe(f, g)(x)` 等价于 `g(f(x))`。
  * @template A - 输入类型
@@ -64,7 +64,10 @@ export function pipe<A, B>(f1: (a: A) => B): (a: A) => B
  * @param f2 - 第二个执行的函数
  * @returns 组合后的函数
  */
-export function pipe<A, B, C>(f1: (a: A) => B, f2: (b: B) => C): (a: A) => C
+export function pipe<A extends any[], B, C>(
+  f1: (...args: A) => B,
+  f2: (value: B) => C,
+): (...args: A) => C
 /**
  * 从左到右组合函数：`pipe(f, g, h)(x)` 等价于 `h(g(f(x)))`。
  * @template A - 输入类型
@@ -76,11 +79,11 @@ export function pipe<A, B, C>(f1: (a: A) => B, f2: (b: B) => C): (a: A) => C
  * @param f3 - 第三个执行的函数
  * @returns 组合后的函数
  */
-export function pipe<A, B, C, D>(
-  f1: (a: A) => B,
-  f2: (b: B) => C,
-  f3: (c: C) => D,
-): (a: A) => D
+export function pipe<A extends any[], B, C, D>(
+  f1: (...args: A) => B,
+  f2: (value: B) => C,
+  f3: (value: C) => D,
+): (...args: A) => D
 /**
  * 从左到右组合函数：`pipe(f, g, h, i)(x)` 等价于 `i(h(g(f(x))))`。
  * @template A - 输入类型
@@ -94,19 +97,20 @@ export function pipe<A, B, C, D>(
  * @param f4 - 第四个执行的函数
  * @returns 组合后的函数
  */
-export function pipe<A, B, C, D, E>(
-  f1: (a: A) => B,
-  f2: (b: B) => C,
-  f3: (c: C) => D,
-  f4: (d: D) => E,
-): (a: A) => E
+export function pipe<A extends any[], B, C, D, E>(
+  f1: (...args: A) => B,
+  f2: (value: B) => C,
+  f3: (value: C) => D,
+  f4: (value: D) => E,
+): (...args: A) => E
 /**
  * 从左到右组合函数（支持任意数量，类型信息会退化）。
  * @param fns - 依次执行的函数列表
  * @returns 组合后的函数
  */
-export function pipe(...fns: Array<(arg: any) => any>): (arg: any) => any {
-  return (arg: any): any => fns.reduce((value, fn) => fn(value), arg)
+export function pipe(...fns: Array<(...args: any[]) => any>): (...args: any[]) => any {
+  return (...args: any[]): any =>
+    fns.slice(1).reduce((value, fn) => fn(value), fns[0](...args))
 }
 
 /**
@@ -116,7 +120,7 @@ export function pipe(...fns: Array<(arg: any) => any>): (arg: any) => any {
  * @param f1 - 唯一执行的函数
  * @returns 组合后的函数
  */
-export function compose<A, B>(f1: (a: A) => B): (a: A) => B
+export function compose<A extends any[], B>(f1: (...args: A) => B): (...args: A) => B
 /**
  * 从右到左组合函数：`compose(f, g)(x)` 等价于 `f(g(x))`。
  * @template A - 输入类型
@@ -126,7 +130,10 @@ export function compose<A, B>(f1: (a: A) => B): (a: A) => B
  * @param f1 - 后执行的函数
  * @returns 组合后的函数
  */
-export function compose<A, B, C>(f2: (b: B) => C, f1: (a: A) => B): (a: A) => C
+export function compose<A extends any[], B, C>(
+  f2: (value: B) => C,
+  f1: (...args: A) => B,
+): (...args: A) => C
 /**
  * 从右到左组合函数：`compose(f, g, h)(x)` 等价于 `f(g(h(x)))`。
  * @template A - 输入类型
@@ -138,11 +145,11 @@ export function compose<A, B, C>(f2: (b: B) => C, f1: (a: A) => B): (a: A) => C
  * @param f1 - 最后执行的函数
  * @returns 组合后的函数
  */
-export function compose<A, B, C, D>(
-  f3: (c: C) => D,
-  f2: (b: B) => C,
-  f1: (a: A) => B,
-): (a: A) => D
+export function compose<A extends any[], B, C, D>(
+  f3: (value: C) => D,
+  f2: (value: B) => C,
+  f1: (...args: A) => B,
+): (...args: A) => D
 /**
  * 从右到左组合函数：`compose(f, g, h, i)(x)` 等价于 `f(g(h(i(x))))`。
  * @template A - 输入类型
@@ -156,19 +163,22 @@ export function compose<A, B, C, D>(
  * @param f1 - 最后执行的函数
  * @returns 组合后的函数
  */
-export function compose<A, B, C, D, E>(
-  f4: (d: D) => E,
-  f3: (c: C) => D,
-  f2: (b: B) => C,
-  f1: (a: A) => B,
-): (a: A) => E
+export function compose<A extends any[], B, C, D, E>(
+  f4: (value: D) => E,
+  f3: (value: C) => D,
+  f2: (value: B) => C,
+  f1: (...args: A) => B,
+): (...args: A) => E
 /**
  * 从右到左组合函数（支持任意数量，类型信息会退化）。
  * @param fns - 函数列表，执行顺序为从右到左
  * @returns 组合后的函数
  */
-export function compose(...fns: Array<(arg: any) => any>): (arg: any) => any {
-  return (arg: any): any => fns.reduceRight((value, fn) => fn(value), arg)
+export function compose(...fns: Array<(...args: any[]) => any>): (...args: any[]) => any {
+  return (...args: any[]): any => {
+    const last = fns[fns.length - 1]
+    return fns.slice(0, -1).reduceRight((value, fn) => fn(value), last(...args))
+  }
 }
 
 /**
@@ -225,79 +235,21 @@ export function attempt<A extends any[], T>(
 }
 
 /**
- * 按顺序串联函数：第一个函数接收全部初始参数，后续函数接收上一步结果。
- * @template A - 初始参数类型
- * @template B - 第一步结果类型
- * @template C - 最终结果类型
- * @param f1 - 第一个执行的函数，可接收多个参数
- * @param f2 - 第二个执行的函数
- * @returns 串联后的函数
- */
-export function chain<A extends any[], B, C>(
-  f1: (...args: A) => B,
-  f2: (value: B) => C,
-): (...args: A) => C
-/**
- * 按顺序串联函数（三步）。
- * @template A - 初始参数类型
- * @template B - 第一步结果类型
- * @template C - 第二步结果类型
- * @template D - 最终结果类型
- * @param f1 - 第一个执行的函数，可接收多个参数
- * @param f2 - 第二个执行的函数
- * @param f3 - 第三个执行的函数
- * @returns 串联后的函数
- */
-export function chain<A extends any[], B, C, D>(
-  f1: (...args: A) => B,
-  f2: (value: B) => C,
-  f3: (value: C) => D,
-): (...args: A) => D
-/**
- * 按顺序串联函数（四步）。
- * @template A - 初始参数类型
- * @template B - 第一步结果类型
- * @template C - 第二步结果类型
- * @template D - 第三步结果类型
- * @template E - 最终结果类型
- * @param f1 - 第一个执行的函数，可接收多个参数
- * @param f2 - 第二个执行的函数
- * @param f3 - 第三个执行的函数
- * @param f4 - 第四个执行的函数
- * @returns 串联后的函数
- */
-export function chain<A extends any[], B, C, D, E>(
-  f1: (...args: A) => B,
-  f2: (value: B) => C,
-  f3: (value: C) => D,
-  f4: (value: D) => E,
-): (...args: A) => E
-export function chain(
-  ...fns: Array<(...args: any[]) => any>
-): (...args: any[]) => any {
-  if (fns.length === 0) {
-    throw new TypeError("chain: at least one function is required")
-  }
-  return (...args: any[]): any =>
-    fns.slice(1).reduce((value, fn) => fn(value), fns[0](...args))
-}
-
-/**
  * 执行函数并吞掉异常：失败时返回 `undefined`，适合可降级的可选操作。
  * @template T - 成功时的结果类型
  * @param fn - 待执行的函数，可返回 Promise
  * @param shouldGuard - 可选，返回 `false` 时重新抛出该异常
  * @returns 同步函数返回结果或 `undefined`，异步函数返回 `Promise` 包装的结果
  */
-export function guard<T>(
+export function tryOrUndefined<T>(
   fn: () => Promise<T>,
   shouldGuard?: (error: unknown) => boolean,
 ): Promise<T | undefined>
-export function guard<T>(
+export function tryOrUndefined<T>(
   fn: () => T,
   shouldGuard?: (error: unknown) => boolean,
 ): T | undefined
-export function guard<T>(
+export function tryOrUndefined<T>(
   fn: () => T | Promise<T>,
   shouldGuard?: (error: unknown) => boolean,
 ): T | undefined | Promise<T | undefined> {

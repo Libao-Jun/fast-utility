@@ -18,12 +18,12 @@ export const isObject = (value: any): boolean => {
 };
 
 /**
- * 通用内部类型判断：基于 `Object.prototype.toString` 精确识别内置类型。
+ * 通用类型判断：基于 `Object.prototype.toString` 精确识别内置类型。
  * @param val - 任意值
  * @param type - 期望的类型名（如 `"Array"`、`"Date"`、`"Function"`）
  * @returns 类型匹配返回 `true`
  */
-export const is = (val: unknown, type: string): boolean => {
+export const isTypeOf = (val: unknown, type: string): boolean => {
   return Object.prototype.toString.call(val) === `[object ${type}]`;
 };
 
@@ -33,7 +33,7 @@ export const is = (val: unknown, type: string): boolean => {
  * @returns 类型谓词：为 `true` 时 `value` 被收窄为 `Function`
  */
 export const isFunction = (val: any): val is Function => {
-  return is(val, "Function") || !!(val && val.constructor && val.call && val.apply);
+  return isTypeOf(val, "Function") || !!(val && val.constructor && val.call && val.apply);
 };
 
 /**
@@ -42,16 +42,16 @@ export const isFunction = (val: any): val is Function => {
  * @returns 类型谓词：为 `true` 时 `value` 被收窄为 `Date`
  */
 export const isDate = (val: any): val is Date => {
-  return is(val, "Date") || (!!val && val.constructor === Date);
+  return isTypeOf(val, "Date") || (!!val && val.constructor === Date);
 };
 
 /**
- * 判断是否为数字（`Infinity` / `-Infinity` 视为数字；`NaN` 因 `NaN !== NaN` 返回 `false`）。
+ * 判断是否为数字（`typeof` 为 `number`，因此 `NaN` 与 `Infinity` 均返回 `true`）。
  * @param val - 任意值
  * @returns 类型谓词：为 `true` 时 `value` 被收窄为 `number`
  */
 export const isNumber = (val: any): val is number => {
-  return typeof val === "number" && !Number.isNaN(val);
+  return typeof val === "number";
 };
 
 /**
@@ -59,7 +59,7 @@ export const isNumber = (val: any): val is number => {
  * @param val - 任意值
  * @returns 类型谓词：为 `true` 时 `value` 被收窄为 `number`
  */
-export const isInt = (val: any): val is number => {
+export const isInteger = (val: any): val is number => {
   return isNumber(val) && Number.isFinite(val) && val % 1 === 0;
 };
 
@@ -78,7 +78,7 @@ export const isFloat = (val: any): val is number => {
  * @returns 类型谓词：为 `true` 时 `value` 被收窄为异步函数
  */
 export const isAsyncFunction = (val: unknown): val is (...args: any[]) => Promise<any> => {
-  return is(val, "AsyncFunction");
+  return isTypeOf(val, "AsyncFunction");
 };
 
 /**
@@ -96,7 +96,7 @@ export const isPromise = (value: any): value is Promise<any> => {
  * @returns 类型谓词：为 `true` 时 `value` 被收窄为 `string`
  */
 export const isString = (val: unknown): val is string => {
-  return is(val, "String") || typeof val === "string" || val instanceof String;
+  return isTypeOf(val, "String") || typeof val === "string" || val instanceof String;
 };
 
 /**
@@ -105,14 +105,14 @@ export const isString = (val: unknown): val is string => {
  * @returns 类型谓词：为 `true` 时 `value` 被收窄为 `boolean`
  */
 export const isBoolean = (val: unknown): val is boolean => {
-  return typeof val === "boolean" || is(val, "Boolean");
+  return typeof val === "boolean" || isTypeOf(val, "Boolean");
 };
 
 /**
  * 判断当前运行环境是否为浏览器（存在 `window`）。
  * @returns 是浏览器环境返回 `true`
  */
-export const isPC = (): boolean => typeof window !== "undefined";
+export const isBrowser = (): boolean => typeof window !== "undefined";
 
 /**
  * 判断是否为 `window` 对象。
@@ -120,7 +120,7 @@ export const isPC = (): boolean => typeof window !== "undefined";
  * @returns 类型谓词：为 `true` 时 `value` 被收窄为 `Window`
  */
 export const isWindow = (val: any): val is Window => {
-  return typeof window !== "undefined" && is(val, "Window");
+  return typeof window !== "undefined" && isTypeOf(val, "Window");
 };
 
 /**
@@ -152,7 +152,7 @@ export const isHexColor = (str: string): boolean => {
  * 判断当前设备是否为 iOS（iPhone / iPad / iPod）。
  * @returns 是 iOS 设备返回 `true`
  */
-export const isIOS = (): boolean =>
+export const isIOSDevice = (): boolean =>
   typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
 /**
@@ -162,7 +162,7 @@ export const isIOS = (): boolean =>
  * @remarks 与 `isEmail` 的差异：本函数只做粗筛，`user+tag@example.com` 可通过；需要限制本地部分字符集时改用 `isEmail`。
  * @see isEmail
  */
-export const isValidEmail = (email: string): boolean => {
+export const isEmailLoose = (email: string): boolean => {
   return /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/.test(email);
 };
 
@@ -172,7 +172,7 @@ export const isValidEmail = (email: string): boolean => {
  * @param val - 任意值
  * @returns 类型谓词：为 `true` 时 `value` 被收窄为 `T`（排除 `undefined`）
  */
-export const isDef = <T>(val: T | undefined): val is T => typeof val !== "undefined";
+export const isDefined = <T>(val: T | undefined): val is T => typeof val !== "undefined";
 
 /**
  * 判断值是否为 `undefined`。
@@ -180,17 +180,7 @@ export const isDef = <T>(val: T | undefined): val is T => typeof val !== "undefi
  * @param val - 任意值
  * @returns 类型谓词：为 `true` 时 `value` 被收窄为 `undefined`
  */
-export const isUnDef = <T>(val: T | undefined): val is undefined => typeof val === "undefined";
-
-/**
- * 判断值是否为 `null` 或 `undefined`。
- * @template T - 原始类型
- * @param val - 任意值
- * @returns 类型谓词：为 `true` 时 `value` 被收窄为 `null | undefined`
- */
-export const isNullOrUnDef = <T>(val: T | null | undefined): val is null | undefined => {
-  return isUnDef(val) || isNull(val);
-};
+export const isUndefined = <T>(val: T | undefined): val is undefined => typeof val === "undefined";
 
 /**
  * 判断是否为 `Symbol`。
@@ -215,21 +205,11 @@ export const isPrimitive = (value: any): boolean => {
 };
 
 /**
- * 判断是否为基本类型。`isPrimitive` 的别名，二者行为完全一致（保留导出仅为兼容）。
- * @param val - 任意值
- * @returns 类型谓词：为 `true` 时 `value` 被收窄为基本类型
- * @see isPrimitive
- */
-export const isBasicType = (val: any): val is string | number | boolean | symbol | bigint | null | undefined => {
-  return isPrimitive(val)
-};
-
-/**
  * 判断值是否为“空”：`null` / `undefined` / 空字符串 / 空数组 / 空对象 / 空 `Map` / 空 `Set` / 无效日期，以及长度为 0 的可枚举对象。
  * @param value - 任意值
  * @returns 视为空返回 `true`
- * @remarks 与 `isEmptySv` 的差异：本函数对数字、函数、`Symbol` 一律返回 `false`，并按有效性判断 `Date`；`isEmptySv` 不特判 `Date`（任何 `Date` 都视为空），但能正确处理 `DataView` 等没有 `length` 的 `ArrayBuffer` 视图。
- * @see isEmptySv
+ * @remarks 与 `isEmptySimple` 的差异：本函数对数字、函数、`Symbol` 一律返回 `false`，并按有效性判断 `Date`；`isEmptySimple` 不特判 `Date`（任何 `Date` 都视为空），但能正确处理 `DataView` 等没有 `length` 的 `ArrayBuffer` 视图。
+ * @see isEmptySimple
  */
 export const isEmpty = (value: any): boolean => {
   if (value === null || value === undefined) return true;
@@ -251,7 +231,7 @@ export const isEmpty = (value: any): boolean => {
  * @remarks 与 `isEmpty` 的差异：不特判 `Date`（任何 `Date` 都没有可枚举自有属性，会被判为空），但支持 `DataView` 等 `ArrayBuffer` 视图。
  * @see isEmpty
  */
-export function isEmptySv(value: string | object | null | undefined): boolean {
+export function isEmptySimple(value: string | object | null | undefined): boolean {
   if (value === null || value === undefined) return true;
   if (typeof value === "string" || Array.isArray(value)) return value.length === 0;
   if (value instanceof Map || value instanceof Set) return value.size === 0;
@@ -332,14 +312,14 @@ export const isNil = (val: unknown): val is null | undefined =>
  * @returns 类型谓词：为 `true` 时 `value` 被收窄为 `Error`
  */
 export const isError = (val: unknown): val is Error =>
-  val instanceof Error || is(val, "Error");
+  val instanceof Error || isTypeOf(val, "Error");
 
 /**
  * 判断是否为 `RegExp` 对象。
  * @param val - 任意值
  * @returns 类型谓词：为 `true` 时 `value` 被收窄为 `RegExp`
  */
-export const isRegExp = (val: unknown): val is RegExp => is(val, "RegExp");
+export const isRegExp = (val: unknown): val is RegExp => isTypeOf(val, "RegExp");
 
 /**
  * 判断是否为 TypedArray（`Uint8Array`、`Float64Array` 等，不含 `DataView`）。

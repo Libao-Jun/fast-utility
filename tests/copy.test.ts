@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { deepClone, deepCloneWithJSON, structClone, shallowClone } from '../src/copy'
+import { deepClone, cloneWithJSON, cloneStructured, shallowClone } from '../src/copy'
 
 // ============================================================
 // deepClone
@@ -164,12 +164,12 @@ describe('deepClone', () => {
 })
 
 // ============================================================
-// deepCloneWithJSON
+// cloneWithJSON
 // ============================================================
-describe('deepCloneWithJSON', () => {
+describe('cloneWithJSON', () => {
   it('should deep clone JSON-safe objects', () => {
     const obj = { a: 1, b: { c: 2 } }
-    const cloned = deepCloneWithJSON(obj)
+    const cloned = cloneWithJSON(obj)
 
     expect(cloned).toEqual(obj)
     expect(cloned).not.toBe(obj)
@@ -178,7 +178,7 @@ describe('deepCloneWithJSON', () => {
 
   it('should deep clone arrays', () => {
     const arr = [1, [2, 3], { a: 4 }]
-    const cloned = deepCloneWithJSON(arr)
+    const cloned = cloneWithJSON(arr)
 
     expect(cloned).toEqual(arr)
     expect(cloned).not.toBe(arr)
@@ -186,52 +186,52 @@ describe('deepCloneWithJSON', () => {
 
   it('should not preserve Date (converts to ISO string)', () => {
     const obj = { date: new Date('2026-06-03') }
-    const cloned = deepCloneWithJSON(obj)
+    const cloned = cloneWithJSON(obj)
     // Dates become strings via JSON.stringify
     expect(typeof cloned.date).toBe('string')
   })
 
   it('should not preserve functions (they are stripped)', () => {
     const obj = { a: 1, fn: () => 'hello' }
-    const cloned = deepCloneWithJSON(obj)
+    const cloned = cloneWithJSON(obj)
     expect(cloned).not.toHaveProperty('fn')
   })
 
   it('should not preserve undefined values', () => {
     const obj = { a: 1, b: undefined }
-    const cloned = deepCloneWithJSON(obj)
+    const cloned = cloneWithJSON(obj)
     expect(cloned).not.toHaveProperty('b')
   })
 
   it('should throw on circular references', () => {
     const obj: any = { a: 1 }
     obj.self = obj
-    expect(() => deepCloneWithJSON(obj)).toThrow()
+    expect(() => cloneWithJSON(obj)).toThrow()
   })
 
   it('should handle primitive values', () => {
-    expect(deepCloneWithJSON(42)).toBe(42)
-    expect(deepCloneWithJSON('hello')).toBe('hello')
-    expect(deepCloneWithJSON(null)).toBe(null)
-    expect(deepCloneWithJSON(true)).toBe(true)
+    expect(cloneWithJSON(42)).toBe(42)
+    expect(cloneWithJSON('hello')).toBe('hello')
+    expect(cloneWithJSON(null)).toBe(null)
+    expect(cloneWithJSON(true)).toBe(true)
   })
 })
 
 // ============================================================
-// structClone
+// cloneStructured
 // ============================================================
-describe('structClone', () => {
+describe('cloneStructured', () => {
   it('should return primitive values as-is', () => {
-    expect(structClone(42)).toBe(42)
-    expect(structClone('hello')).toBe('hello')
-    expect(structClone(true)).toBe(true)
-    expect(structClone(null)).toBe(null)
-    expect(structClone(undefined)).toBe(undefined)
+    expect(cloneStructured(42)).toBe(42)
+    expect(cloneStructured('hello')).toBe('hello')
+    expect(cloneStructured(true)).toBe(true)
+    expect(cloneStructured(null)).toBe(null)
+    expect(cloneStructured(undefined)).toBe(undefined)
   })
 
   it('should deep clone plain objects', () => {
     const obj = { a: 1, b: { c: 2 } }
-    const cloned = structClone(obj)
+    const cloned = cloneStructured(obj)
 
     expect(cloned).toEqual(obj)
     expect(cloned).not.toBe(obj)
@@ -240,7 +240,7 @@ describe('structClone', () => {
 
   it('should deep clone arrays', () => {
     const arr = [1, [2, 3], { a: 4 }]
-    const cloned = structClone(arr)
+    const cloned = cloneStructured(arr)
 
     expect(cloned).toEqual(arr)
     expect(cloned).not.toBe(arr)
@@ -250,7 +250,7 @@ describe('structClone', () => {
 
   it('should clone Date objects', () => {
     const date = new Date('2026-06-03T12:00:00Z')
-    const cloned = structClone(date)
+    const cloned = cloneStructured(date)
 
     expect(cloned).toBeInstanceOf(Date)
     expect(cloned.getTime()).toBe(date.getTime())
@@ -262,7 +262,7 @@ describe('structClone', () => {
 
   it('should clone RegExp objects', () => {
     const regex = /hello/gi
-    const cloned = structClone(regex)
+    const cloned = cloneStructured(regex)
 
     expect(cloned).toBeInstanceOf(RegExp)
     expect(cloned.source).toBe('hello')
@@ -275,7 +275,7 @@ describe('structClone', () => {
       ['a', 1],
       ['b', { nested: true }],
     ])
-    const cloned = structClone(map)
+    const cloned = cloneStructured(map)
 
     expect(cloned).toBeInstanceOf(Map)
     expect(cloned.get('a')).toBe(1)
@@ -286,7 +286,7 @@ describe('structClone', () => {
 
   it('should clone Set objects', () => {
     const set = new Set([1, { a: 1 }])
-    const cloned = structClone(set)
+    const cloned = cloneStructured(set)
 
     expect(cloned).toBeInstanceOf(Set)
     expect(cloned.size).toBe(2)
@@ -299,25 +299,25 @@ describe('structClone', () => {
   })
 
   it('should handle empty objects', () => {
-    expect(structClone({})).toEqual({})
-    expect(structClone([])).toEqual([])
-    expect(structClone(new Map())).toEqual(new Map())
-    expect(structClone(new Set())).toEqual(new Set())
+    expect(cloneStructured({})).toEqual({})
+    expect(cloneStructured([])).toEqual([])
+    expect(cloneStructured(new Map())).toEqual(new Map())
+    expect(cloneStructured(new Set())).toEqual(new Set())
   })
 
   it('should throw on functions', () => {
-    expect(() => structClone(() => {})).toThrow()
-    expect(() => structClone({ fn: () => {} })).toThrow()
+    expect(() => cloneStructured(() => {})).toThrow()
+    expect(() => cloneStructured({ fn: () => {} })).toThrow()
   })
 
   it('should throw on Symbol values', () => {
-    expect(() => structClone(Symbol('test'))).toThrow()
-    expect(() => structClone({ sym: Symbol('test') })).toThrow()
+    expect(() => cloneStructured(Symbol('test'))).toThrow()
+    expect(() => cloneStructured({ sym: Symbol('test') })).toThrow()
   })
 
   it('should accept options parameter without throwing', () => {
     const obj = { a: 1, b: [2, 3] }
-    const cloned = structClone(obj, {})
+    const cloned = cloneStructured(obj, {})
     expect(cloned).toEqual(obj)
     expect(cloned).not.toBe(obj)
   })
@@ -330,7 +330,7 @@ describe('structClone', () => {
       const obj: any = { a: 1 }
       obj.self = obj
 
-      const cloned = structClone(obj)
+      const cloned = cloneStructured(obj)
       expect(cloned.a).toBe(1)
       expect(cloned.self).toBe(cloned)
       expect(cloned.self).not.toBe(obj)
@@ -342,7 +342,7 @@ describe('structClone', () => {
       objA.b = objB
       objB.a = objA
 
-      const cloned = structClone(objA)
+      const cloned = cloneStructured(objA)
       expect(cloned.name).toBe('A')
       expect(cloned.b.name).toBe('B')
       expect(cloned.b.a).toBe(cloned)
@@ -353,7 +353,7 @@ describe('structClone', () => {
       const arr: any[] = [1, 2]
       arr.push(arr)
 
-      const cloned = structClone(arr)
+      const cloned = cloneStructured(arr)
       expect(cloned[0]).toBe(1)
       expect(cloned[2]).toBe(cloned)
       expect(cloned[2]).not.toBe(arr)
@@ -363,7 +363,7 @@ describe('structClone', () => {
       const map = new Map()
       map.set('self', map)
 
-      const cloned = structClone(map)
+      const cloned = cloneStructured(map)
       expect(cloned.get('self')).toBe(cloned)
       expect(cloned.get('self')).not.toBe(map)
     })

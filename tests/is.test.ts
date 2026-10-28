@@ -2,31 +2,29 @@ import { describe, it, expect } from 'vitest'
 import {
   isArray,
   isObject,
-  is,
+  isTypeOf,
   isFunction,
   isDate,
   isNumber,
-  isInt,
+  isInteger,
   isFloat,
   isAsyncFunction,
   isPromise,
   isString,
   isBoolean,
-  isPC,
+  isBrowser,
   isWindow,
   isElement,
   isNull,
   isHexColor,
-  isIOS,
-  isValidEmail,
-  isDef,
-  isUnDef,
-  isNullOrUnDef,
+  isIOSDevice,
+  isEmailLoose,
+  isDefined,
+  isUndefined,
   isSymbol,
   isPrimitive,
-  isBasicType,
   isEmpty,
-  isEmptySv,
+  isEmptySimple,
   isEqual,
   isNil,
   isError,
@@ -83,26 +81,26 @@ describe('isObject', () => {
 // ============================================================
 // is (internal type check)
 // ============================================================
-describe('is', () => {
+describe('isTypeOf', () => {
   it('should correctly identify types via Object.prototype.toString', () => {
-    expect(is([], 'Array')).toBe(true)
-    expect(is({}, 'Object')).toBe(true)
-    expect(is(() => {}, 'Function')).toBe(true)
-    expect(is(new Date(), 'Date')).toBe(true)
-    expect(is(/regex/, 'RegExp')).toBe(true)
-    expect(is('hello', 'String')).toBe(true)
-    expect(is(42, 'Number')).toBe(true)
-    expect(is(true, 'Boolean')).toBe(true)
-    expect(is(null, 'Null')).toBe(true)
-    expect(is(undefined, 'Undefined')).toBe(true)
-    expect(is(new Map(), 'Map')).toBe(true)
-    expect(is(new Set(), 'Set')).toBe(true)
+    expect(isTypeOf([], 'Array')).toBe(true)
+    expect(isTypeOf({}, 'Object')).toBe(true)
+    expect(isTypeOf(() => {}, 'Function')).toBe(true)
+    expect(isTypeOf(new Date(), 'Date')).toBe(true)
+    expect(isTypeOf(/regex/, 'RegExp')).toBe(true)
+    expect(isTypeOf('hello', 'String')).toBe(true)
+    expect(isTypeOf(42, 'Number')).toBe(true)
+    expect(isTypeOf(true, 'Boolean')).toBe(true)
+    expect(isTypeOf(null, 'Null')).toBe(true)
+    expect(isTypeOf(undefined, 'Undefined')).toBe(true)
+    expect(isTypeOf(new Map(), 'Map')).toBe(true)
+    expect(isTypeOf(new Set(), 'Set')).toBe(true)
   })
 
   it('should return false for mismatched types', () => {
-    expect(is([], 'Object')).toBe(false)
-    expect(is({}, 'Array')).toBe(false)
-    expect(is(42, 'String')).toBe(false)
+    expect(isTypeOf([], 'Object')).toBe(false)
+    expect(isTypeOf({}, 'Array')).toBe(false)
+    expect(isTypeOf(42, 'String')).toBe(false)
   })
 })
 
@@ -162,10 +160,8 @@ describe('isNumber', () => {
     expect(isNumber(3.14)).toBe(true)
   })
 
-  it('should return false for NaN and Infinity (Number(x) !== x)', () => {
-    // isNumber uses Number(val) === val. NaN !== NaN so isNumber(NaN) is false.
-    expect(isNumber(NaN)).toBe(false)
-    // Infinity works: Number(Infinity) === Infinity
+  it('should return true for NaN and Infinity (typeof number)', () => {
+    expect(isNumber(NaN)).toBe(true)
     expect(isNumber(Infinity)).toBe(true)
     expect(isNumber(-Infinity)).toBe(true)
   })
@@ -180,31 +176,31 @@ describe('isNumber', () => {
 })
 
 // ============================================================
-// isInt
+// isInteger
 // ============================================================
-describe('isInt', () => {
+describe('isInteger', () => {
   it('should return true for integers', () => {
-    expect(isInt(0)).toBe(true)
-    expect(isInt(42)).toBe(true)
-    expect(isInt(-10)).toBe(true)
-    expect(isInt(Number.MAX_SAFE_INTEGER)).toBe(true)
+    expect(isInteger(0)).toBe(true)
+    expect(isInteger(42)).toBe(true)
+    expect(isInteger(-10)).toBe(true)
+    expect(isInteger(Number.MAX_SAFE_INTEGER)).toBe(true)
   })
 
   it('should return false for floats', () => {
-    expect(isInt(3.14)).toBe(false)
-    expect(isInt(0.1)).toBe(false)
-    expect(isInt(-1.5)).toBe(false)
+    expect(isInteger(3.14)).toBe(false)
+    expect(isInteger(0.1)).toBe(false)
+    expect(isInteger(-1.5)).toBe(false)
   })
 
   it('should return false for NaN and Infinity', () => {
-    expect(isInt(NaN)).toBe(false)
-    expect(isInt(Infinity)).toBe(false)
-    expect(isInt(-Infinity)).toBe(false)
+    expect(isInteger(NaN)).toBe(false)
+    expect(isInteger(Infinity)).toBe(false)
+    expect(isInteger(-Infinity)).toBe(false)
   })
 
   it('should return false for non-numbers', () => {
-    expect(isInt('42')).toBe(false)
-    expect(isInt(null)).toBe(false)
+    expect(isInteger('42')).toBe(false)
+    expect(isInteger(null)).toBe(false)
   })
 })
 
@@ -284,7 +280,7 @@ describe('isString', () => {
   it('should return true for strings', () => {
     expect(isString('hello')).toBe(true)
     expect(isString('')).toBe(true)
-    expect(isString(`template`)).toBe(true)
+    expect(isString(`renderTemplate`)).toBe(true)
   })
 
   it('should return true for String objects', () => {
@@ -324,11 +320,11 @@ describe('isBoolean', () => {
 })
 
 // ============================================================
-// isPC
+// isBrowser
 // ============================================================
-describe('isPC', () => {
+describe('isBrowser', () => {
   it('should return true in browser/jsdom environment', () => {
-    expect(isPC()).toBe(true)
+    expect(isBrowser()).toBe(true)
   })
 })
 
@@ -337,7 +333,7 @@ describe('isPC', () => {
 // ============================================================
 describe('isWindow', () => {
   it('should return boolean for window and non-window objects', () => {
-    // isWindow checks: typeof window !== "undefined" && is(val, "Window")
+    // isWindow checks: typeof window !== "undefined" && isTypeOf(val, "Window")
     // In jsdom, Object.prototype.toString.call(window) may not return "[object Window]"
     // So we just verify it doesn't throw and returns a boolean
     const result = isWindow(window)
@@ -416,87 +412,69 @@ describe('isHexColor', () => {
 })
 
 // ============================================================
-// isIOS
+// isIOSDevice
 // ============================================================
-describe('isIOS', () => {
+describe('isIOSDevice', () => {
   it('should return false in jsdom (non-iOS userAgent)', () => {
     // jsdom userAgent doesn't match iPad/iPhone/iPod
-    expect(isIOS()).toBe(false)
+    expect(isIOSDevice()).toBe(false)
   })
 })
 
 // ============================================================
-// isValidEmail
+// isEmailLoose
 // ============================================================
-describe('isValidEmail', () => {
+describe('isEmailLoose', () => {
   it('should return true for valid emails', () => {
-    expect(isValidEmail('test@example.com')).toBe(true)
-    expect(isValidEmail('user.name@domain.co')).toBe(true)
-    expect(isValidEmail('user+tag@domain.com')).toBe(true)
-    expect(isValidEmail('a@b.c')).toBe(true)
+    expect(isEmailLoose('test@example.com')).toBe(true)
+    expect(isEmailLoose('user.name@domain.co')).toBe(true)
+    expect(isEmailLoose('user+tag@domain.com')).toBe(true)
+    expect(isEmailLoose('a@b.c')).toBe(true)
   })
 
   it('should return false for invalid emails', () => {
-    expect(isValidEmail('')).toBe(false)
-    expect(isValidEmail('plaintext')).toBe(false)
-    expect(isValidEmail('@domain.com')).toBe(false)
-    expect(isValidEmail('user@')).toBe(false)
-    expect(isValidEmail('user@.com')).toBe(false)
-    expect(isValidEmail('user name@domain.com')).toBe(false)
+    expect(isEmailLoose('')).toBe(false)
+    expect(isEmailLoose('plaintext')).toBe(false)
+    expect(isEmailLoose('@domain.com')).toBe(false)
+    expect(isEmailLoose('user@')).toBe(false)
+    expect(isEmailLoose('user@.com')).toBe(false)
+    expect(isEmailLoose('user name@domain.com')).toBe(false)
   })
 })
 
 // ============================================================
-// isDef
+// isDefined
 // ============================================================
-describe('isDef', () => {
+describe('isDefined', () => {
   it('should return true for defined values', () => {
-    expect(isDef(0)).toBe(true)
-    expect(isDef('')).toBe(true)
-    expect(isDef(null)).toBe(true)
-    expect(isDef(false)).toBe(true)
-    expect(isDef(NaN)).toBe(true)
+    expect(isDefined(0)).toBe(true)
+    expect(isDefined('')).toBe(true)
+    expect(isDefined(null)).toBe(true)
+    expect(isDefined(false)).toBe(true)
+    expect(isDefined(NaN)).toBe(true)
   })
 
   it('should return false for undefined', () => {
-    expect(isDef(undefined)).toBe(false)
+    expect(isDefined(undefined)).toBe(false)
   })
 })
 
 // ============================================================
-// isUnDef
+// isUndefined
 // ============================================================
-describe('isUnDef', () => {
+describe('isUndefined', () => {
   it('should return true for undefined', () => {
-    expect(isUnDef(undefined)).toBe(true)
+    expect(isUndefined(undefined)).toBe(true)
   })
 
   it('should return false for non-undefined values', () => {
-    expect(isUnDef(null)).toBe(false)
-    expect(isUnDef(0)).toBe(false)
-    expect(isUnDef('')).toBe(false)
-    expect(isUnDef(false)).toBe(false)
+    expect(isUndefined(null)).toBe(false)
+    expect(isUndefined(0)).toBe(false)
+    expect(isUndefined('')).toBe(false)
+    expect(isUndefined(false)).toBe(false)
   })
 })
 
-// ============================================================
-// isNullOrUnDef
-// ============================================================
-describe('isNullOrUnDef', () => {
-  it('should return true for null or undefined', () => {
-    expect(isNullOrUnDef(null)).toBe(true)
-    expect(isNullOrUnDef(undefined)).toBe(true)
-  })
-
-  it('should return false for other values', () => {
-    expect(isNullOrUnDef(0)).toBe(false)
-    expect(isNullOrUnDef('')).toBe(false)
-    expect(isNullOrUnDef(false)).toBe(false)
-    expect(isNullOrUnDef('hello')).toBe(false)
-    expect(isNullOrUnDef([])).toBe(false)
-    expect(isNullOrUnDef({})).toBe(false)
-  })
-})
 
 // ============================================================
 // isSymbol
@@ -605,54 +583,54 @@ describe('isEmpty', () => {
 })
 
 // ============================================================
-// isEmptySv
+// isEmptySimple
 // ============================================================
-describe('isEmptySv', () => {
+describe('isEmptySimple', () => {
   it('should return true for null and undefined', () => {
-    expect(isEmptySv(null)).toBe(true)
-    expect(isEmptySv(undefined)).toBe(true)
+    expect(isEmptySimple(null)).toBe(true)
+    expect(isEmptySimple(undefined)).toBe(true)
   })
 
   it('should return true for empty strings', () => {
-    expect(isEmptySv('')).toBe(true)
+    expect(isEmptySimple('')).toBe(true)
   })
 
   it('should return false for non-empty strings', () => {
-    expect(isEmptySv('hello')).toBe(false)
+    expect(isEmptySimple('hello')).toBe(false)
   })
 
   it('should return true for empty arrays', () => {
-    expect(isEmptySv([])).toBe(true)
+    expect(isEmptySimple([])).toBe(true)
   })
 
   it('should return false for non-empty arrays', () => {
-    expect(isEmptySv([1])).toBe(false)
+    expect(isEmptySimple([1])).toBe(false)
   })
 
   it('should return true for empty objects', () => {
-    expect(isEmptySv({})).toBe(true)
+    expect(isEmptySimple({})).toBe(true)
   })
 
   it('should return false for non-empty objects', () => {
-    expect(isEmptySv({ a: 1 })).toBe(false)
+    expect(isEmptySimple({ a: 1 })).toBe(false)
   })
 
   it('should return true for empty Map and Set', () => {
-    expect(isEmptySv(new Map())).toBe(true)
-    expect(isEmptySv(new Set())).toBe(true)
+    expect(isEmptySimple(new Map())).toBe(true)
+    expect(isEmptySimple(new Set())).toBe(true)
   })
 
   it('should return false for non-empty Map and Set', () => {
-    expect(isEmptySv(new Map([['a', 1]]))).toBe(false)
-    expect(isEmptySv(new Set([1]))).toBe(false)
+    expect(isEmptySimple(new Map([['a', 1]]))).toBe(false)
+    expect(isEmptySimple(new Set([1]))).toBe(false)
   })
 
   it('should return true for empty TypedArrays', () => {
-    expect(isEmptySv(new Uint8Array(0))).toBe(true)
+    expect(isEmptySimple(new Uint8Array(0))).toBe(true)
   })
 
   it('should return false for non-empty TypedArrays', () => {
-    expect(isEmptySv(new Uint8Array([1, 2]))).toBe(false)
+    expect(isEmptySimple(new Uint8Array([1, 2]))).toBe(false)
   })
 })
 
@@ -711,79 +689,6 @@ describe('isEqual', () => {
   })
 })
 
-// ============================================================
-// isBasicType
-// ============================================================
-describe('isBasicType', () => {
-  it('null 是基础类型', () => {
-    expect(isBasicType(null)).toBe(true)
-  })
-
-  it('undefined 是基础类型', () => {
-    expect(isBasicType(undefined)).toBe(true)
-  })
-
-  it('字符串是基础类型', () => {
-    expect(isBasicType('hello')).toBe(true)
-  })
-
-  it('数字是基础类型', () => {
-    expect(isBasicType(42)).toBe(true)
-    expect(isBasicType(0)).toBe(true)
-    expect(isBasicType(NaN)).toBe(true)
-  })
-
-  it('布尔值是基础类型', () => {
-    expect(isBasicType(true)).toBe(true)
-    expect(isBasicType(false)).toBe(true)
-  })
-
-  it('symbol 是基础类型', () => {
-    expect(isBasicType(Symbol('foo'))).toBe(true)
-  })
-
-  it('bigint 是基础类型', () => {
-    expect(isBasicType(BigInt(42))).toBe(true)
-  })
-
-  it('对象不是基础类型', () => {
-    expect(isBasicType({})).toBe(false)
-    expect(isBasicType({ a: 1 })).toBe(false)
-  })
-
-  it('数组不是基础类型', () => {
-    expect(isBasicType([])).toBe(false)
-    expect(isBasicType([1, 2, 3])).toBe(false)
-  })
-
-  it('函数不是基础类型', () => {
-    expect(isBasicType(() => {})).toBe(false)
-    expect(isBasicType(function () {})).toBe(false)
-  })
-
-  it('Date 不是基础类型', () => {
-    expect(isBasicType(new Date())).toBe(false)
-  })
-
-  it('正则不是基础类型', () => {
-    expect(isBasicType(/abc/)).toBe(false)
-  })
-
-  it('Map / Set 不是基础类型', () => {
-    expect(isBasicType(new Map())).toBe(false)
-    expect(isBasicType(new Set())).toBe(false)
-  })
-
-  it('Promise 不是基础类型', () => {
-    expect(isBasicType(Promise.resolve())).toBe(false)
-  })
-
-  it('new String / new Number 包装对象不是基础类型', () => {
-    expect(isBasicType(new String('hello'))).toBe(false)
-    expect(isBasicType(new Number(42))).toBe(false)
-    expect(isBasicType(new Boolean(true))).toBe(false)
-  })
-})
 
 // ============================================================
 // isObject (plain object semantics)

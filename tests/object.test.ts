@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { pick, omit, mapValues, mapKeys, invert, merge, get, has, set, crush, construct, mapEntries } from '../src/object'
+import { pick, omit, mapValues, mapKeys, invert, merge, get, has, set, flattenObject, unflattenObject, mapEntries } from '../src/object'
 
 // ============================================================
 // pick
@@ -218,11 +218,11 @@ describe('set', () => {
 })
 
 // ============================================================
-// crush
+// flattenObject
 // ============================================================
-describe('crush', () => {
+describe('flattenObject', () => {
   it('将嵌套对象压平为路径键', () => {
-    expect(crush({ a: { b: 1 }, list: [{ c: 2 }], empty: {} })).toEqual({
+    expect(flattenObject({ a: { b: 1 }, list: [{ c: 2 }], empty: {} })).toEqual({
       'a.b': 1,
       'list.0.c': 2,
       empty: {},
@@ -230,32 +230,32 @@ describe('crush', () => {
   })
 
   it('支持自定义分隔符', () => {
-    expect(crush({ a: { b: 1 } }, '/')).toEqual({ 'a/b': 1 })
+    expect(flattenObject({ a: { b: 1 } }, '/')).toEqual({ 'a/b': 1 })
   })
 
   it('空对象返回空对象', () => {
-    expect(crush({})).toEqual({})
+    expect(flattenObject({})).toEqual({})
   })
 })
 
 // ============================================================
-// construct
+// unflattenObject
 // ============================================================
-describe('construct', () => {
+describe('unflattenObject', () => {
   it('将路径键还原为嵌套结构', () => {
-    expect(construct({ 'a.b': 1, 'list.0.c': 2 })).toEqual({
+    expect(unflattenObject({ 'a.b': 1, 'list.0.c': 2 })).toEqual({
       a: { b: 1 },
       list: [{ c: 2 }],
     })
   })
 
-  it('与 crush 互为逆操作', () => {
+  it('与 flattenObject 互为逆操作', () => {
     const source = { a: { b: 1 }, list: [{ c: 2 }, { d: 3 }] }
-    expect(construct(crush(source))).toEqual(source)
+    expect(unflattenObject(flattenObject(source))).toEqual(source)
   })
 
   it('跳过危险路径', () => {
-    expect(construct({ '__proto__.polluted': true })).toEqual({})
+    expect(unflattenObject({ '__proto__.polluted': true })).toEqual({})
   })
 })
 
