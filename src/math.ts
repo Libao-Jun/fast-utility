@@ -122,7 +122,7 @@ export const inRange = (value: number, min: number, max: number): boolean => {
  * @param t - 插值比例，通常取值 `[0, 1]`（`0` 取 `start`，`1` 取 `end`）
  * @returns 插值结果
  */
-export const lerp = (start: number, end: number, t: number): number => start + (end - start) * t
+export const linearInterpolate = (start: number, end: number, t: number): number => start + (end - start) * t
 
 /**
  * 转换为整数。

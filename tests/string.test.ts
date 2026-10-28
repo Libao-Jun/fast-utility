@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { generateRandomString, generateUUID, escapeHTML, unescapeHTML, stripHTML, ensurePrefix, ensureSuffix, removePrefix, removeSuffix, byteSize, maskName, splitWords, camelCase, pascalCase, snakeCase, kebabCase, deburr, escapeRegExp, renderTemplate, titleCase } from '../src/string'
+import { generateRandomString, generateUUID, escapeHTML, unescapeHTML, stripHTML, ensurePrefix, ensureSuffix, removePrefix, removeSuffix, byteSize, maskName, splitWords, camelCase, pascalCase, snakeCase, kebabCase, removeDiacritics, escapeRegExp, renderTemplate, titleCase } from '../src/string'
 
 // ============================================================
 // generateRandomString
@@ -390,15 +390,15 @@ describe('kebabCase', () => {
 })
 
 // ============================================================
-// deburr
+// removeDiacritics
 // ============================================================
-describe('deburr', () => {
+describe('removeDiacritics', () => {
   it('去除拉丁变音符号', () => {
-    expect(deburr('café naïve')).toBe('cafe naive')
+    expect(removeDiacritics('café naïve')).toBe('cafe naive')
   })
 
   it('不改变普通文本', () => {
-    expect(deburr('hello 你好')).toBe('hello 你好')
+    expect(removeDiacritics('hello 你好')).toBe('hello 你好')
   })
 })
 

@@ -4,7 +4,7 @@
 
 [English](./README.en.md) | 简体中文
 
-fast-utility 把日常开发中反复出现的工具函数收拢到一处：类型判断、时间日期、数字与货币格式化、字符串处理、数组与对象操作、深拷贝、存储与 Cookie、浏览器增强、防抖节流、异步控制、数学计算与格式校验，共 172 个函数。全部从包根按名导出，用到哪个打包哪个。
+fast-utility 把日常开发中反复出现的工具函数收拢到一处：类型判断、时间日期、数字与货币格式化、字符串处理、数组与对象操作、深拷贝、存储与 Cookie、浏览器增强、防抖节流、异步控制、数学计算与格式校验，共 168 个函数。全部从包根按名导出，用到哪个打包哪个。
 
 ## ✨ 特性
 
@@ -68,14 +68,12 @@ search.cancel();
 | `isInteger(v)` / `isFloat(v)` | 是否有限整数 / 有限小数 | `isInteger(42)` → `true` |
 | `isBoolean(v)` | 是否布尔值 | `isBoolean(true)` → `true` |
 | `isSymbol(v)` | 是否 `Symbol` | `isSymbol(Symbol())` → `true` |
-| `isPrimitive(v)` | 是否原始类型（非对象、非函数） | `isPrimitive(1)` → `true` |
+| `isBasicType(v)` | 是否基本类型（非对象、非函数） | `isBasicType(1)` → `true` |
 | `isNull(v)` | 是否 `null` | `isNull(null)` → `true` |
 | `isDefined(v)` / `isUndefined(v)` | 是否已定义 / 未定义 | `isDefined(0)` → `true` |
-| `isNil(v)` | 是否 `null` 或 `undefined`（语义化别名） | `isNil(null)` → `true` |
-| `isEmpty(v)` | 是否为空：空串、空数组、空对象、空 `Map` / `Set`、无效日期等 | `isEmpty({})` → `true` |
-| `isEmptySimple(v)` | 简化版空值判断（字符串、数组、`Map` / `Set`、`ArrayBuffer` 视图、对象） | `isEmptySimple([])` → `true` |
+| `isNullOrUndefined(v)` | 是否 `null` 或 `undefined`（严格等于判断） | `isNullOrUndefined(null)` → `true` |
+| `isEmpty(v)` | 是否为空：空串、空数组、空对象、空 `Map` / `Set`、空 `ArrayBuffer` 视图、无效日期 | `isEmpty({})` → `true` |
 | `isHexColor(s)` | 是否 `#RGB` / `#RRGGBB` | `isHexColor("#fff")` → `true` |
-| `isEmailLoose(s)` | 宽松邮箱校验 | `isEmailLoose("a@b.com")` → `true` |
 | `isBrowser()` | 是否浏览器环境 | Node 中为 `false` |
 | `isIOSDevice()` | 是否 iOS 设备（读取 UA，仅浏览器） | 依 UA 而定 |
 | `isWindow(v)` | 是否 `window` 对象 | `isWindow(window)` → `true` |
@@ -84,7 +82,7 @@ search.cancel();
 | `isRegExp(v)` | 是否正则对象 | `isRegExp(/a/)` → `true` |
 | `isTypedArray(v)` | 是否 TypedArray（不含 `DataView`） | `isTypedArray(new Uint8Array())` → `true` |
 
-> `isEmpty` 与 `isEmptySimple` 对 `Date`、`DataView` 的处理不同；`isEmail` 比 `isEmailLoose` 严格（不接受 `+` 与本地部分的点号）。
+> `isEmpty` 对 `ArrayBuffer` 视图按 `byteLength` 判断；`isTypedArray` 不包含 `DataView`。
 
 ### 时间与日期
 
@@ -118,8 +116,7 @@ search.cancel();
 | `uppercaseFirst(s)` / `lowercaseFirst(s)` | 首字母大写 / 小写 | `uppercaseFirst("hello")` → `"Hello"` |
 | `trimAll(s)` | 去除所有空白字符 | `trimAll(" a b\nc ")` → `"abc"` |
 | `reverse(s)` | 按码点反转（emoji 安全） | `reverse("abc")` → `"cba"` |
-| `truncate(s, max, suffix = "...")` | 按长度截断，`max` 含后缀长度 | `truncate("Hello World", 8)` → `"Hello..."` |
-| `truncateByCharacters(s, max, suffix = "...")` | 按字符截断，中文按一字计 | `truncateByCharacters("你好世界欢迎你", 4)` → `"你好世界..."` |
+| `truncate(s, max, suffix = "...")` | 按字符截断（中文 / emoji 按一字计），`max` 含后缀长度 | `truncate("Hello World", 8)` → `"Hello..."` |
 | `maskPhone(s)` | 手机号脱敏 | `maskPhone("13812345678")` → `"138****5678"` |
 | `formatPhoneWithSpaces(s)` | 手机号 3-4-4 空格分隔 | `formatPhoneWithSpaces("13812345678")` → `"138 1234 5678"` |
 | `maskName(v)` | 姓名脱敏，保留首字 | `maskName("张三丰")` → `"张**"` |
@@ -135,7 +132,7 @@ search.cancel();
 | `pascalCase(s)` | 转换为大驼峰 | `pascalCase("foo bar")` → `"FooBar"` |
 | `snakeCase(s)` | 转换为下划线命名 | `snakeCase("fooBar")` → `"foo_bar"` |
 | `kebabCase(s)` | 转换为短横线命名 | `kebabCase("fooBar")` → `"foo-bar"` |
-| `deburr(s)` | 去除拉丁变音符号 | `deburr("café")` → `"cafe"` |
+| `removeDiacritics(s)` | 去除拉丁变音符号 | `removeDiacritics("café")` → `"cafe"` |
 | `escapeRegExp(s)` | 转义正则元字符 | `escapeRegExp("a.b")` → `"a\\.b"` |
 | `renderTemplate(s, data, pattern?)` | 按 `{{key}}` 占位符替换变量 | `renderTemplate("Hi {{name}}", { name: "Ray" })` → `"Hi Ray"` |
 | `titleCase(s)` | 转换为标题式命名（空格分隔、首字母大写） | `titleCase("fooBar baz")` → `"Foo Bar Baz"` |
@@ -149,7 +146,6 @@ search.cancel();
 | `sortNumbersAscending(arr)` / `sortNumbersDescending(arr)` | 数值升序 / 降序，返回新数组 | `sortNumbersAscending([3, 1, 2])` → `[1, 2, 3]` |
 | `sortNumbersByKey(arr, key, order = "asc")` | 按数值属性排序，返回新数组 | `sortNumbersByKey([{ n: 3 }, { n: 1 }], "n")` → `[{ n: 1 }, { n: 3 }]` |
 | `toArray(x)` | 类数组 / 可迭代对象转数组 | `toArray("abc")` → `["a", "b", "c"]` |
-| `mergeArrays(...arrs)` | 合并多个数组 | `mergeArrays([1], [2, 3])` → `[1, 2, 3]` |
 | `flatten(arr, depth = 1)` | 扁平化到指定层级 | `flatten([1, [2, [3]]], 2)` → `[1, 2, 3]` |
 | `findInArray(arr, key, value)` | 查找首个匹配项，未找到返回 `undefined` | `findInArray([{ id: 2 }], "id", 2)` → `{ id: 2 }` |
 | `groupBy(arr, keyOrFn)` | 按属性或取值函数分组 | `groupBy([{ t: "a" }, { t: "b" }], "t")` → `{ a: [...], b: [...] }` |
@@ -261,7 +257,7 @@ search.cancel();
 | `sum(arr, fn?)` | 求和；可传取值函数 | `sum([1, 2, 3])` → `6` |
 | `average(arr, fn?)` | 平均值；可传取值函数 | `average([1, 2, 3])` → `2` |
 | `inRange(v, min, max)` | 是否在闭区间内 | `inRange(5, 1, 10)` → `true` |
-| `lerp(start, end, t)` | 线性插值 | `lerp(0, 100, 0.5)` → `50` |
+| `linearInterpolate(start, end, t)` | 线性插值 | `linearInterpolate(0, 100, 0.5)` → `50` |
 | `toInteger(v, radix = 10)` | 转换为整数，失败返回 `0` | `toInteger("42.9")` → `42` |
 | `toFloat(v)` | 转换为浮点数，失败返回 `0` | `toFloat("3.14px")` → `3.14` |
 
@@ -270,7 +266,7 @@ search.cancel();
 | 函数 | 说明 | 示例 |
 | --- | --- | --- |
 | `isChineseIDCard(v)` | 身份证格式校验（15 / 18 位，末位可为 `X`），不校验校验位 | `isChineseIDCard("11010119900307321X")` → `true` |
-| `isEmail(v)` | 邮箱格式校验（较严格） | `isEmail("a@b.com")` → `true` |
+| `isEmail(v)` | 邮箱格式校验（兼容 `+` 与点号） | `isEmail("a@b.com")` → `true` |
 | `isMobilePhone(v)` | 国内手机号（`1` 开头、第二位 `3`–`9`、共 11 位） | `isMobilePhone("13812345678")` → `true` |
 | `isURL(v)` | 是否合法的 HTTP / HTTPS URL | `isURL("https://x.com")` → `true` |
 

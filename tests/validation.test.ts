@@ -66,6 +66,15 @@ describe('isEmail', () => {
     expect(isEmail('test@mail.example.com')).toBe(true)
   })
 
+  it('带加号或点号的本地部分返回 true', () => {
+    expect(isEmail('user+tag@domain.com')).toBe(true)
+    expect(isEmail('user.name@domain.co')).toBe(true)
+  })
+
+  it('单字符域名段返回 true', () => {
+    expect(isEmail('a@b.c')).toBe(true)
+  })
+
   it('无 @ 符号返回 false', () => {
     expect(isEmail('testexample.com')).toBe(false)
   })
@@ -80,6 +89,12 @@ describe('isEmail', () => {
 
   it('空字符串返回 false', () => {
     expect(isEmail('')).toBe(false)
+  })
+
+  it('域名含空段或空格返回 false', () => {
+    expect(isEmail('user@.com')).toBe(false)
+    expect(isEmail('user@domain..com')).toBe(false)
+    expect(isEmail('user name@domain.com')).toBe(false)
   })
 })
 

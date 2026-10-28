@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { clamp, randomInteger, randomFloat, round, sum, average, inRange, lerp, toInteger, toFloat } from '../src/math'
+import { clamp, randomInteger, randomFloat, round, sum, average, inRange, linearInterpolate, toInteger, toFloat } from '../src/math'
 
 // ============================================================
 // clamp
@@ -245,32 +245,32 @@ describe('inRange', () => {
 })
 
 // ============================================================
-// lerp
+// linearInterpolate
 // ============================================================
-describe('lerp', () => {
+describe('linearInterpolate', () => {
   it('t=0 返回 start', () => {
-    expect(lerp(0, 100, 0)).toBe(0)
+    expect(linearInterpolate(0, 100, 0)).toBe(0)
   })
 
   it('t=1 返回 end', () => {
-    expect(lerp(0, 100, 1)).toBe(100)
+    expect(linearInterpolate(0, 100, 1)).toBe(100)
   })
 
   it('t=0.5 返回中点', () => {
-    expect(lerp(0, 100, 0.5)).toBe(50)
+    expect(linearInterpolate(0, 100, 0.5)).toBe(50)
   })
 
   it('处理负数', () => {
-    expect(lerp(-10, 10, 0.5)).toBe(0)
+    expect(linearInterpolate(-10, 10, 0.5)).toBe(0)
   })
 
   it('t 超出 [0,1] 可外推', () => {
-    expect(lerp(0, 10, 2)).toBe(20)
-    expect(lerp(0, 10, -1)).toBe(-10)
+    expect(linearInterpolate(0, 10, 2)).toBe(20)
+    expect(linearInterpolate(0, 10, -1)).toBe(-10)
   })
 
   it('start 等于 end', () => {
-    expect(lerp(5, 5, 0.7)).toBe(5)
+    expect(linearInterpolate(5, 5, 0.7)).toBe(5)
   })
 })
 

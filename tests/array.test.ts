@@ -6,7 +6,6 @@ import {
   sortNumbersDescending,
   sortNumbersByKey,
   toArray,
-  mergeArrays,
   flatten,
   findInArray,
   groupBy,
@@ -277,51 +276,6 @@ describe('toArray', () => {
     // String is also ArrayLike
     const result = toArray('hello')
     expect(result).toEqual(['h', 'e', 'l', 'l', 'o'])
-  })
-})
-
-// ============================================================
-// mergeArrays
-// ============================================================
-describe('mergeArrays', () => {
-  it('should merge multiple arrays', () => {
-    expect(mergeArrays([1, 2], [3, 4], [5])).toEqual([1, 2, 3, 4, 5])
-  })
-
-  it('should handle single array', () => {
-    expect(mergeArrays([1, 2, 3])).toEqual([1, 2, 3])
-  })
-
-  it('should handle empty arrays', () => {
-    expect(mergeArrays([], [1, 2], [])).toEqual([1, 2])
-  })
-
-  it('should handle all empty arrays', () => {
-    expect(mergeArrays([], [], [])).toEqual([])
-  })
-
-  it('should handle no arguments', () => {
-    expect(mergeArrays()).toEqual([])
-  })
-
-  it('should not mutate original arrays', () => {
-    const a = [1, 2]
-    const b = [3, 4]
-    mergeArrays(a, b)
-    expect(a).toEqual([1, 2])
-    expect(b).toEqual([3, 4])
-  })
-
-  it('should work with string arrays', () => {
-    expect(mergeArrays(['a', 'b'], ['c'])).toEqual(['a', 'b', 'c'])
-  })
-
-  it('should work with mixed types', () => {
-    expect(mergeArrays([1, 'a'], [true])).toEqual([1, 'a', true])
-  })
-
-  it('should handle arrays with duplicate values', () => {
-    expect(mergeArrays([1, 2], [2, 3])).toEqual([1, 2, 2, 3])
   })
 })
 

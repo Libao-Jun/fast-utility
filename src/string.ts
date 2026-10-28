@@ -178,7 +178,7 @@ export const titleCase = (str: string): string =>
  * @param str - 原始字符串
  * @returns 去除组合附加符号后的字符串
  */
-export const deburr = (str: string): string =>
+export const removeDiacritics = (str: string): string =>
   str.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
 
 /**

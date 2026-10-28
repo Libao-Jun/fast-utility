@@ -79,14 +79,6 @@ export const sortNumbersByKey = <T extends Record<string, any>>(
 export const toArray = <T>(arrayLike: ArrayLike<T> | Iterable<T>): T[] => Array.from(arrayLike)
 
 /**
- * 合并多个数组（等价于 `Array.prototype.flat`）。
- * @template T - 各数组的元素类型
- * @param arrays - 任意数量的待合并数组
- * @returns 合并后的新数组
- */
-export const mergeArrays = <T>(...arrays: T[][]): T[] => arrays.flat()
-
-/**
  * 多维数组扁平化到指定层级。
  * @template T - 扁平后元素的类型
  * @param arr - 待扁平化的（可能多维的）数组

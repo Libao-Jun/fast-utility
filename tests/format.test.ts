@@ -14,7 +14,6 @@ import {
   formatPhoneWithSpaces,
   capitalize,
   truncate,
-  truncateByCharacters,
   trimAll,
   uppercaseFirst,
   lowercaseFirst,
@@ -318,30 +317,11 @@ describe('truncate', () => {
   it('should handle border length', () => {
     expect(truncate('Hello', 5)).toBe('Hello')
   })
-})
 
-// ============================================================
-// truncateByCharacters
-// ============================================================
-describe('truncateByCharacters', () => {
-  it('should truncate by character count', () => {
-    expect(truncateByCharacters('你好世界欢迎你', 4)).toBe('你好世界...')
-  })
-
-  it('should not truncate within maxWords', () => {
-    expect(truncateByCharacters('你好世界', 4)).toBe('你好世界')
-  })
-
-  it('should use custom suffix', () => {
-    expect(truncateByCharacters('你好世界欢迎你', 4, '…')).toBe('你好世界…')
-  })
-
-  it('should handle empty string', () => {
-    expect(truncateByCharacters('', 5)).toBe('')
-  })
-
-  it('should handle exactly maxWords length', () => {
-    expect(truncateByCharacters('hello', 5)).toBe('hello')
+  it('should count CJK and emoji as one character', () => {
+    expect(truncate('你好世界欢迎你呀', 7)).toBe('你好世界...')
+    expect(truncate('你好世界欢迎你', 7)).toBe('你好世界欢迎你')
+    expect(truncate('👍👍👍👍👍👍', 5)).toBe('👍👍...')
   })
 })
 

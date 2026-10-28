@@ -9,15 +9,15 @@ export const isChineseIDCard = (value: string): boolean => {
 }
 
 /**
- * 校验是否为合法的邮箱地址（严格版：本地部分仅允许字母、数字、下划线与短横线，不支持 `+` 和点号；域名须含至少一个点）。
+ * 校验是否为合法的邮箱地址（格式级校验）。
  *
- * 需要兼容 `user+tag@example.com`、`user.name@example.com` 等常见格式时，改用 `isEmailLoose`。
+ * 本地部分允许字母、数字与 `.` `_` `%` `+` `-`；域名须由至少两段组成，且不允许空段或空格。
+ * 仅做格式筛查，不校验域名是否存在、邮箱是否可投递。
  * @param value - 待校验的邮箱字符串
  * @returns 合法返回 `true`
- * @see isEmailLoose
  */
 export const isEmail = (value: string): boolean => {
-  return /^[\w-]+@[\w-]+(\.[\w-]+)+$/.test(value)
+  return /^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/.test(value)
 }
 
 /**

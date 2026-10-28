@@ -18,15 +18,13 @@ import {
   isNull,
   isHexColor,
   isIOSDevice,
-  isEmailLoose,
   isDefined,
   isUndefined,
   isSymbol,
-  isPrimitive,
+  isBasicType,
   isEmpty,
-  isEmptySimple,
   isEqual,
-  isNil,
+  isNullOrUndefined,
   isError,
   isRegExp,
   isTypedArray,
@@ -422,27 +420,6 @@ describe('isIOSDevice', () => {
 })
 
 // ============================================================
-// isEmailLoose
-// ============================================================
-describe('isEmailLoose', () => {
-  it('should return true for valid emails', () => {
-    expect(isEmailLoose('test@example.com')).toBe(true)
-    expect(isEmailLoose('user.name@domain.co')).toBe(true)
-    expect(isEmailLoose('user+tag@domain.com')).toBe(true)
-    expect(isEmailLoose('a@b.c')).toBe(true)
-  })
-
-  it('should return false for invalid emails', () => {
-    expect(isEmailLoose('')).toBe(false)
-    expect(isEmailLoose('plaintext')).toBe(false)
-    expect(isEmailLoose('@domain.com')).toBe(false)
-    expect(isEmailLoose('user@')).toBe(false)
-    expect(isEmailLoose('user@.com')).toBe(false)
-    expect(isEmailLoose('user name@domain.com')).toBe(false)
-  })
-})
-
-// ============================================================
 // isDefined
 // ============================================================
 describe('isDefined', () => {
@@ -497,26 +474,26 @@ describe('isSymbol', () => {
 })
 
 // ============================================================
-// isPrimitive
+// isBasicType
 // ============================================================
-describe('isPrimitive', () => {
+describe('isBasicType', () => {
   it('should return true for primitive types', () => {
-    expect(isPrimitive(42)).toBe(true)
-    expect(isPrimitive('hello')).toBe(true)
-    expect(isPrimitive(true)).toBe(true)
-    expect(isPrimitive(false)).toBe(true)
-    expect(isPrimitive(null)).toBe(true)
-    expect(isPrimitive(undefined)).toBe(true)
-    expect(isPrimitive(Symbol())).toBe(true)
-    expect(isPrimitive(BigInt(1))).toBe(true)
+    expect(isBasicType(42)).toBe(true)
+    expect(isBasicType('hello')).toBe(true)
+    expect(isBasicType(true)).toBe(true)
+    expect(isBasicType(false)).toBe(true)
+    expect(isBasicType(null)).toBe(true)
+    expect(isBasicType(undefined)).toBe(true)
+    expect(isBasicType(Symbol())).toBe(true)
+    expect(isBasicType(BigInt(1))).toBe(true)
   })
 
   it('should return false for objects and functions', () => {
-    expect(isPrimitive({})).toBe(false)
-    expect(isPrimitive([])).toBe(false)
-    expect(isPrimitive(() => {})).toBe(false)
-    expect(isPrimitive(new Date())).toBe(false)
-    expect(isPrimitive(new Map())).toBe(false)
+    expect(isBasicType({})).toBe(false)
+    expect(isBasicType([])).toBe(false)
+    expect(isBasicType(() => {})).toBe(false)
+    expect(isBasicType(new Date())).toBe(false)
+    expect(isBasicType(new Map())).toBe(false)
   })
 })
 
@@ -580,57 +557,12 @@ describe('isEmpty', () => {
     expect(isEmpty(() => {})).toBe(false)
     expect(isEmpty(Symbol())).toBe(false)
   })
-})
 
-// ============================================================
-// isEmptySimple
-// ============================================================
-describe('isEmptySimple', () => {
-  it('should return true for null and undefined', () => {
-    expect(isEmptySimple(null)).toBe(true)
-    expect(isEmptySimple(undefined)).toBe(true)
-  })
-
-  it('should return true for empty strings', () => {
-    expect(isEmptySimple('')).toBe(true)
-  })
-
-  it('should return false for non-empty strings', () => {
-    expect(isEmptySimple('hello')).toBe(false)
-  })
-
-  it('should return true for empty arrays', () => {
-    expect(isEmptySimple([])).toBe(true)
-  })
-
-  it('should return false for non-empty arrays', () => {
-    expect(isEmptySimple([1])).toBe(false)
-  })
-
-  it('should return true for empty objects', () => {
-    expect(isEmptySimple({})).toBe(true)
-  })
-
-  it('should return false for non-empty objects', () => {
-    expect(isEmptySimple({ a: 1 })).toBe(false)
-  })
-
-  it('should return true for empty Map and Set', () => {
-    expect(isEmptySimple(new Map())).toBe(true)
-    expect(isEmptySimple(new Set())).toBe(true)
-  })
-
-  it('should return false for non-empty Map and Set', () => {
-    expect(isEmptySimple(new Map([['a', 1]]))).toBe(false)
-    expect(isEmptySimple(new Set([1]))).toBe(false)
-  })
-
-  it('should return true for empty TypedArrays', () => {
-    expect(isEmptySimple(new Uint8Array(0))).toBe(true)
-  })
-
-  it('should return false for non-empty TypedArrays', () => {
-    expect(isEmptySimple(new Uint8Array([1, 2]))).toBe(false)
+  it('should handle ArrayBuffer views by byteLength', () => {
+    expect(isEmpty(new Uint8Array(0))).toBe(true)
+    expect(isEmpty(new Uint8Array([1, 2]))).toBe(false)
+    expect(isEmpty(new DataView(new ArrayBuffer(0)))).toBe(true)
+    expect(isEmpty(new DataView(new ArrayBuffer(4)))).toBe(false)
   })
 })
 
@@ -717,18 +649,18 @@ describe('isNumber robustness', () => {
 })
 
 // ============================================================
-// isNil
+// isNullOrUndefined
 // ============================================================
-describe('isNil', () => {
+describe('isNullOrUndefined', () => {
   it('null / undefined 返回 true', () => {
-    expect(isNil(null)).toBe(true)
-    expect(isNil(undefined)).toBe(true)
+    expect(isNullOrUndefined(null)).toBe(true)
+    expect(isNullOrUndefined(undefined)).toBe(true)
   })
 
   it('其他值返回 false', () => {
-    expect(isNil(0)).toBe(false)
-    expect(isNil('')).toBe(false)
-    expect(isNil(false)).toBe(false)
+    expect(isNullOrUndefined(0)).toBe(false)
+    expect(isNullOrUndefined('')).toBe(false)
+    expect(isNullOrUndefined(false)).toBe(false)
   })
 })
 

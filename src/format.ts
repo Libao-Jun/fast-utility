@@ -127,26 +127,17 @@ export const formatPhoneWithSpaces = (phone: string): string => phone.replace(/(
 export const capitalize = (str: string): string => str.replace(/\b\w/g, (char) => char.toUpperCase())
 
 /**
- * 按字符数截断字符串，超出部分追加后缀。
+ * 按字符数截断字符串，超出部分追加后缀。按 Unicode 码点计数，中文与 emoji 均按一个字符计，不会截断代理对。
  * @param str - 原始字符串
  * @param maxLength - 允许的最大长度（含后缀）
  * @param suffix - 截断后缀，默认 `"..."`
  * @returns 截断后的字符串（未超出则原样返回）
  */
 export const truncate = (str: string, maxLength: number, suffix = "..."): string => {
-  return str.length <= maxLength ? str : str.substring(0, maxLength - suffix.length) + suffix
-};
-
-/**
- * 按字符数截断文本（中文按一个字计），对中文更友好。
- * @param str - 原始字符串
- * @param maxCharacters - 保留的最大字符数（不含后缀）
- * @param suffix - 截断后缀，默认 `"..."`
- * @returns 截断后的字符串
- */
-export const truncateByCharacters = (str: string, maxCharacters: number, suffix = "..."): string => {
   const chars = [...str]
-  return chars.length <= maxCharacters ? str : chars.slice(0, maxCharacters).join("") + suffix
+  if (chars.length <= maxLength) return str
+  const keep = Math.max(0, maxLength - suffix.length)
+  return chars.slice(0, keep).join("") + suffix
 };
 
 /**

@@ -4,7 +4,7 @@
 
 ## v1.0.0
 
-首个正式版本：零依赖、Tree-shaking 友好的 JavaScript / TypeScript 工具函数库，共 172 个函数。
+首个正式版本：零依赖、Tree-shaking 友好的 JavaScript / TypeScript 工具函数库，共 168 个函数。
 
 **核心特性**
 
@@ -13,7 +13,7 @@
 - 纯逻辑函数在浏览器与 Node 中通用；DOM 相关函数按分组标注「仅浏览器」。
 - 处理类函数不修改入参，排序、去重、合并等均返回新数组或新对象。
 
-### 类型判断 `is`（30）
+### 类型判断 `is`（28）
 
 - `isArray` — 判断是否为数组（类型守卫）
 - `isObject` — 判断是否为普通对象（原型为 `Object.prototype` 或 `null`）
@@ -28,16 +28,14 @@
 - `isString` — 判断是否为字符串（含包装对象）
 - `isBoolean` — 判断是否为布尔值
 - `isSymbol` — 判断是否为 `Symbol`
-- `isPrimitive` — 判断是否为原始类型
+- `isBasicType` — 判断是否为基本类型（原始类型）
 - `isNull` — 判断是否为 `null`
 - `isDefined` — 判断是否已定义（不为 `undefined`）
 - `isUndefined` — 判断是否为 `undefined`
-- `isNil` — 判断是否为 `null` 或 `undefined`（语义化别名）
-- `isEmpty` — 判断是否为空（完备版：含无效日期、空 `Map` / `Set`）
-- `isEmptySimple` — 判断是否为空（简化版：支持 `ArrayBuffer` 视图）
+- `isNullOrUndefined` — 判断是否为 `null` 或 `undefined`
+- `isEmpty` — 判断是否为空（含无效日期、空 `Map` / `Set`、空 `ArrayBuffer` 视图）
 - `isEqual` — 深度相等比较（支持 `Date` / `RegExp` / `Map` / `Set` / 循环引用）
 - `isHexColor` — 判断是否为十六进制颜色
-- `isEmailLoose` — 宽松邮箱校验
 - `isBrowser` — 判断是否为浏览器环境
 - `isWindow` — 判断是否为 `window` 对象
 - `isElement` — 判断是否为 DOM 元素
@@ -66,7 +64,7 @@
 - `formatCompactZhCN` — 大数简化（中文缩写，如 `1.2万`）
 - `formatSigned` — 带正负号的数值格式化
 
-### 字符串 `format` / `string`（29）
+### 字符串 `format` / `string`（28）
 
 - `maskPhone` — 手机号脱敏
 - `formatPhoneWithSpaces` — 手机号按 3-4-4 空格分隔
@@ -75,8 +73,7 @@
 - `lowercaseFirst` — 首字母小写
 - `reverse` — 按码点反转字符串（emoji 安全）
 - `trimAll` — 去除所有空白字符
-- `truncate` — 按长度截断（上限含后缀）
-- `truncateByCharacters` — 按字符截断（中文按一字计）
+- `truncate` — 按字符截断（中文 / emoji 按一字计，上限含后缀）
 - `generateRandomString` — 生成随机字母数字字符串
 - `generateUUID` — 生成 UUID v4（优先 `crypto.randomUUID()`）
 - `escapeHTML` — 转义 HTML 特殊字符
@@ -93,12 +90,12 @@
 - `pascalCase` — 转换为大驼峰命名
 - `snakeCase` — 转换为下划线命名
 - `kebabCase` — 转换为短横线命名
-- `deburr` — 去除拉丁变音符号
+- `removeDiacritics` — 去除拉丁变音符号
 - `escapeRegExp` — 转义正则元字符
 - `renderTemplate` — 按 `{{key}}` 占位符替换变量
 - `titleCase` — 转换为标题式命名
 
-### 数组 `array`（40）
+### 数组 `array`（39）
 
 - `unique` — 按 SameValueZero 去重；可传取值函数按值去重（保留首次出现）
 - `uniqueByKey` — 对象数组按属性去重（保留首次出现）
@@ -106,7 +103,6 @@
 - `sortNumbersDescending` — 数值降序排序
 - `sortNumbersByKey` — 对象数组按数值属性排序
 - `toArray` — 类数组或可迭代对象转数组
-- `mergeArrays` — 合并多个数组
 - `flatten` — 多维数组扁平化到指定层级
 - `findInArray` — 按属性值查找首个匹配项
 - `groupBy` — 按属性或取值函数分组
@@ -213,13 +209,13 @@
 - `sum` — 数组求和；可传取值函数
 - `average` — 数组平均值；可传取值函数
 - `inRange` — 判断数值是否在闭区间内
-- `lerp` — 线性插值
+- `linearInterpolate` — 线性插值
 - `toInteger` — 转换为整数（失败返回 `0`）
 - `toFloat` — 转换为浮点数（失败返回 `0`）
 
 ### 格式校验 `validation`（4）
 
 - `isChineseIDCard` — 校验身份证号码格式
-- `isEmail` — 严格邮箱格式校验
+- `isEmail` — 邮箱格式校验（兼容 `+` 与点号）
 - `isMobilePhone` — 校验国内手机号
 - `isURL` — 校验 HTTP / HTTPS URL

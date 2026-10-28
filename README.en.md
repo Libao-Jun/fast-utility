@@ -4,7 +4,7 @@
 
 English | [简体中文](./README.md)
 
-fast-utility gathers the helpers you keep rewriting into one place: type checks, date & time, number and currency formatting, string manipulation, array and object operations, deep cloning, storage and cookies, browser helpers, debounce/throttle, async control, math and validators — 172 functions in total. Every function is imported by name from the package root, so you only ship what you use.
+fast-utility gathers the helpers you keep rewriting into one place: type checks, date & time, number and currency formatting, string manipulation, array and object operations, deep cloning, storage and cookies, browser helpers, debounce/throttle, async control, math and validators — 168 functions in total. Every function is imported by name from the package root, so you only ship what you use.
 
 ## ✨ Features
 
@@ -68,14 +68,12 @@ Most of the `is*` family are type guards (`v is T`) and can be used directly for
 | `isInteger(v)` / `isFloat(v)` | Whether the value is a finite integer / finite float | `isInteger(42)` → `true` |
 | `isBoolean(v)` | Whether the value is a boolean | `isBoolean(true)` → `true` |
 | `isSymbol(v)` | Whether the value is a `Symbol` | `isSymbol(Symbol())` → `true` |
-| `isPrimitive(v)` | Whether the value is primitive (not object, not function) | `isPrimitive(1)` → `true` |
+| `isBasicType(v)` | Whether the value is a primitive type (not object, not function) | `isBasicType(1)` → `true` |
 | `isNull(v)` | Whether the value is `null` | `isNull(null)` → `true` |
 | `isDefined(v)` / `isUndefined(v)` | Whether the value is defined / undefined | `isDefined(0)` → `true` |
-| `isNil(v)` | Whether the value is `null` or `undefined` (semantic alias) | `isNil(null)` → `true` |
-| `isEmpty(v)` | Whether the value is empty: empty string, array, object, `Map` / `Set`, invalid date, etc. | `isEmpty({})` → `true` |
-| `isEmptySimple(v)` | Simplified emptiness check (strings, arrays, `Map` / `Set`, `ArrayBuffer` views, objects) | `isEmptySimple([])` → `true` |
+| `isNullOrUndefined(v)` | Whether the value is `null` or `undefined` (strict equality) | `isNullOrUndefined(null)` → `true` |
+| `isEmpty(v)` | Whether the value is empty: empty string, array, object, `Map` / `Set`, empty `ArrayBuffer` view, invalid date | `isEmpty({})` → `true` |
 | `isHexColor(s)` | Whether the value is `#RGB` / `#RRGGBB` | `isHexColor("#fff")` → `true` |
-| `isEmailLoose(s)` | Loose email validation | `isEmailLoose("a@b.com")` → `true` |
 | `isBrowser()` | Whether running in a browser | `false` in Node |
 | `isIOSDevice()` | Whether the device is iOS (reads the UA; browser only) | depends on UA |
 | `isWindow(v)` | Whether the value is the `window` object | `isWindow(window)` → `true` |
@@ -84,7 +82,7 @@ Most of the `is*` family are type guards (`v is T`) and can be used directly for
 | `isRegExp(v)` | Whether the value is a regular expression | `isRegExp(/a/)` → `true` |
 | `isTypedArray(v)` | Whether the value is a TypedArray (excluding `DataView`) | `isTypedArray(new Uint8Array())` → `true` |
 
-> `isEmpty` and `isEmptySimple` differ on `Date` and `DataView`; `isEmail` is stricter than `isEmailLoose` (no `+` or dots in the local part).
+> `isEmpty` checks `ArrayBuffer` views by `byteLength`; `isTypedArray` excludes `DataView`.
 
 ### Date & time
 
@@ -118,8 +116,7 @@ Most of the `is*` family are type guards (`v is T`) and can be used directly for
 | `uppercaseFirst(s)` / `lowercaseFirst(s)` | Uppercase / lowercase the first character | `uppercaseFirst("hello")` → `"Hello"` |
 | `trimAll(s)` | Remove all whitespace | `trimAll(" a b\nc ")` → `"abc"` |
 | `reverse(s)` | Reverse by code points (emoji-safe) | `reverse("abc")` → `"cba"` |
-| `truncate(s, max, suffix = "...")` | Truncate by length; `max` includes the suffix | `truncate("Hello World", 8)` → `"Hello..."` |
-| `truncateByCharacters(s, max, suffix = "...")` | Truncate by characters; CJK counts as one | `truncateByCharacters("你好世界欢迎你", 4)` → `"你好世界..."` |
+| `truncate(s, max, suffix = "...")` | Truncate by characters (CJK / emoji count as one); `max` includes the suffix | `truncate("Hello World", 8)` → `"Hello..."` |
 | `maskPhone(s)` | Mask a phone number | `maskPhone("13812345678")` → `"138****5678"` |
 | `formatPhoneWithSpaces(s)` | Space a phone number as 3-4-4 | `formatPhoneWithSpaces("13812345678")` → `"138 1234 5678"` |
 | `maskName(v)` | Mask a name, keeping the first character | `maskName("张三丰")` → `"张**"` |
@@ -135,7 +132,7 @@ Most of the `is*` family are type guards (`v is T`) and can be used directly for
 | `pascalCase(s)` | Convert to PascalCase | `pascalCase("foo bar")` → `"FooBar"` |
 | `snakeCase(s)` | Convert to snake_case | `snakeCase("fooBar")` → `"foo_bar"` |
 | `kebabCase(s)` | Convert to kebab-case | `kebabCase("fooBar")` → `"foo-bar"` |
-| `deburr(s)` | Remove Latin diacritics | `deburr("café")` → `"cafe"` |
+| `removeDiacritics(s)` | Remove Latin diacritics | `removeDiacritics("café")` → `"cafe"` |
 | `escapeRegExp(s)` | Escape regex metacharacters | `escapeRegExp("a.b")` → `"a\\.b"` |
 | `renderTemplate(s, data, pattern?)` | Replace `{{key}}` placeholders with values | `renderTemplate("Hi {{name}}", { name: "Ray" })` → `"Hi Ray"` |
 | `titleCase(s)` | Convert to Title Case (space-separated, capitalized) | `titleCase("fooBar baz")` → `"Foo Bar Baz"` |
@@ -149,7 +146,6 @@ Most of the `is*` family are type guards (`v is T`) and can be used directly for
 | `sortNumbersAscending(arr)` / `sortNumbersDescending(arr)` | Numeric ascending / descending; returns a new array | `sortNumbersAscending([3, 1, 2])` → `[1, 2, 3]` |
 | `sortNumbersByKey(arr, key, order = "asc")` | Sort by a numeric property; returns a new array | `sortNumbersByKey([{ n: 3 }, { n: 1 }], "n")` → `[{ n: 1 }, { n: 3 }]` |
 | `toArray(x)` | Convert an array-like / iterable to an array | `toArray("abc")` → `["a", "b", "c"]` |
-| `mergeArrays(...arrs)` | Merge multiple arrays | `mergeArrays([1], [2, 3])` → `[1, 2, 3]` |
 | `flatten(arr, depth = 1)` | Flatten to the given depth | `flatten([1, [2, [3]]], 2)` → `[1, 2, 3]` |
 | `findInArray(arr, key, value)` | Find the first match; `undefined` if absent | `findInArray([{ id: 2 }], "id", 2)` → `{ id: 2 }` |
 | `groupBy(arr, keyOrFn)` | Group by a property or iteratee | `groupBy([{ t: "a" }, { t: "b" }], "t")` → `{ a: [...], b: [...] }` |
@@ -261,7 +257,7 @@ Most of the `is*` family are type guards (`v is T`) and can be used directly for
 | `sum(arr, fn?)` | Sum; optional iteratee | `sum([1, 2, 3])` → `6` |
 | `average(arr, fn?)` | Average; optional iteratee | `average([1, 2, 3])` → `2` |
 | `inRange(v, min, max)` | Whether the value is inside the closed interval | `inRange(5, 1, 10)` → `true` |
-| `lerp(start, end, t)` | Linear interpolation | `lerp(0, 100, 0.5)` → `50` |
+| `linearInterpolate(start, end, t)` | Linear interpolation | `linearInterpolate(0, 100, 0.5)` → `50` |
 | `toInteger(v, radix = 10)` | Convert to integer; `0` when unparsable | `toInteger("42.9")` → `42` |
 | `toFloat(v)` | Convert to float; `0` when unparsable | `toFloat("3.14px")` → `3.14` |
 
@@ -270,7 +266,7 @@ Most of the `is*` family are type guards (`v is T`) and can be used directly for
 | Function | Description | Example |
 | --- | --- | --- |
 | `isChineseIDCard(v)` | Chinese ID format check (15 / 18 digits, trailing `X` allowed); does not verify the checksum | `isChineseIDCard("11010119900307321X")` → `true` |
-| `isEmail(v)` | Email format check (stricter) | `isEmail("a@b.com")` → `true` |
+| `isEmail(v)` | Email format check (accepts `+` and dots) | `isEmail("a@b.com")` → `true` |
 | `isMobilePhone(v)` | Mainland China mobile number (`1` first, second digit `3`–`9`, 11 digits) | `isMobilePhone("13812345678")` → `true` |
 | `isURL(v)` | Whether the value is a valid HTTP / HTTPS URL | `isURL("https://x.com")` → `true` |
 
