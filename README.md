@@ -20,6 +20,17 @@ pnpm add fast-utility
 # 或：npm install fast-utility / yarn add fast-utility
 ```
 
+## CDN
+
+```html
+<script src="https://unpkg.com/fast-utility"></script>
+<script>
+  fastUtility.chunk([1, 2, 3, 4], 2); // [[1, 2], [3, 4]]
+</script>
+```
+
+全局变量为 `fastUtility`，也可改用 `https://cdn.jsdelivr.net/npm/fast-utility`。
+
 ## 快速开始
 
 ```ts

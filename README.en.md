@@ -20,6 +20,17 @@ pnpm add fast-utility
 # or: npm install fast-utility / yarn add fast-utility
 ```
 
+## CDN
+
+```html
+<script src="https://unpkg.com/fast-utility"></script>
+<script>
+  fastUtility.chunk([1, 2, 3, 4], 2); // [[1, 2], [3, 4]]
+</script>
+```
+
+The global is `fastUtility`. You can also use `https://cdn.jsdelivr.net/npm/fast-utility`.
+
 ## Quick start
 
 ```ts

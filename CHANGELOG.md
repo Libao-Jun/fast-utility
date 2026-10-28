@@ -2,6 +2,32 @@
 
 本文件记录 fast-utility 的版本变更。版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/) 规范。
 
+## 未发布
+
+### 构建
+
+- 构建结构对齐 radash：ESM / CJS 去除产物注释、不输出 sourcemap，压缩交给使用方；新增 IIFE 全局包 `dist/index.global.js` 与压缩版 `dist/index.global.min.js`。
+- 类型声明改由 `rolldown-plugin-dts` 打包为单个 `dist/index.d.ts`，产物不含相对导入，`node16` / `nodenext` 下可直接解析。
+- `package.json` 增加 `sideEffects: false`、`unpkg`、`jsdelivr` 字段。
+
+### 变更
+
+- `src/index.ts` 由 `export *` 改为显式命名导出（168 个函数 + `RetryOptions`、`AttemptResult` 两个类型），公开 API 收敛为白名单，避免内部实现被意外导出。
+
+## v1.0.1
+
+修复发布包在 `node16` / `nodenext` 模块解析下的类型不可用问题。
+
+### 修复
+
+- `dist/index.d.ts` 的相对导出补全 `.js` 扩展名。此前使用方在 `moduleResolution: node16 | nodenext` 下会遇到 TS2834，并导致全部导出类型缺失。
+- `exports` 条件顺序调整，`types` 置于 `import` / `require` 之前，确保 TypeScript 优先读取类型声明。
+- `repository.url` 规范为 `git+https://github.com/Libao-Jun/fast-utility.git`，消除 `npm publish` 的自动修正警告。
+
+### 构建
+
+- `src/index.ts` 的相对导出统一带 `.js` 扩展名，`tsc` 生成的类型声明直接可被 `node16` / `nodenext` 解析，无需构建后处理脚本。
+
 ## v1.0.0
 
 首个正式版本：零依赖、Tree-shaking 友好的 JavaScript / TypeScript 工具函数库，共 168 个函数。
