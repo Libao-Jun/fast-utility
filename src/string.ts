@@ -10,8 +10,9 @@ export const generateRandomString = (length: number = 8): string => {
 
 /**
  * 生成 UUID v4（随机 UUID，符合 RFC 4122）。
+ *
+ * 优先使用 `crypto.randomUUID()`；环境不支持时回退到基于 `Math.random` 的实现。
  * @returns 形如 `xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx` 的 UUID 字符串
- * @remarks 优先使用 `crypto.randomUUID()`；环境不支持时回退到基于 `Math.random` 的实现。
  */
 export const generateUUID = (): string => {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -111,9 +112,10 @@ const WORD_PATTERN = /[A-Z]?[a-z]+|[A-Z]+(?![a-z])|\d+/g
 
 /**
  * 将字符串拆分为单词数组（仅识别 ASCII 字母与数字）。
+ *
+ * 支持 `fooBar`、`foo_bar`、`foo-bar`、`foo bar` 等常见分隔形式；中文等非 ASCII 字符不会被识别为单词。
  * @param str - 原始字符串
  * @returns 单词数组；无匹配时返回空数组
- * @remarks 支持 `fooBar`、`foo_bar`、`foo-bar`、`foo bar` 等常见分隔形式；中文等非 ASCII 字符不会被识别为单词。
  */
 export const splitWords = (str: string): string[] => {
   if (!str) return []
@@ -161,18 +163,20 @@ export const kebabCase = (str: string): string =>
 
 /**
  * 转换为标题式命名（每个单词首字母大写、空格分隔）。
+ *
+ * 仅识别 ASCII 单词，camelCase 会被拆分为多个单词。
  * @param str - 原始字符串
  * @returns 标题式字符串；无单词时返回空字符串
- * @remarks 仅识别 ASCII 单词，camelCase 会被拆分为多个单词。
  */
 export const titleCase = (str: string): string =>
   splitWords(str).map(capitalizeWord).join(' ')
 
 /**
  * 去除拉丁字符上的变音符号（如 `café` → `cafe`）。
+ *
+ * 基于 `String.prototype.normalize('NFD')`，不处理中文、日文等非拉丁文字。
  * @param str - 原始字符串
  * @returns 去除组合附加符号后的字符串
- * @remarks 基于 `String.prototype.normalize('NFD')`，不处理中文、日文等非拉丁文字。
  */
 export const deburr = (str: string): string =>
   str.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -187,11 +191,12 @@ export const escapeRegExp = (str: string): string =>
 
 /**
  * 按占位符替换模板中的变量。
+ *
+ * 变量缺失或为 `null` / `undefined` 时替换为空字符串；自定义模式缺少 `g` 标志时只会替换首个匹配。
  * @param str - 模板字符串
  * @param data - 变量表
  * @param pattern - 匹配模式，默认匹配 `{{key}}`；需包含一个捕获组并带 `g` 标志
  * @returns 替换后的字符串
- * @remarks 变量缺失或为 `null` / `undefined` 时替换为空字符串；自定义模式缺少 `g` 标志时只会替换首个匹配。
  */
 export const renderTemplate = (
   str: string,

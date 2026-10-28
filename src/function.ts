@@ -6,10 +6,11 @@ export type AttemptResult<T> = [error: Error, value: undefined] | [error: undefi
 
 /**
  * 包装函数，使其最多执行一次；后续调用直接返回首次结果。
+ *
+ * 首次调用抛出异常时不会锁定状态，允许再次尝试。
  * @template T - 被包装函数的类型
  * @param fn - 目标函数
  * @returns 仅执行一次的新函数
- * @remarks 首次调用抛出异常时不会锁定状态，允许再次尝试。
  */
 export const once = <T extends (...args: any[]) => any>(
   fn: T,
@@ -27,11 +28,12 @@ export const once = <T extends (...args: any[]) => any>(
 
 /**
  * 缓存函数计算结果：相同键再次调用时直接返回缓存值。
+ *
+ * 缓存仅存在于返回函数的闭包中，不提供清理接口；需要失效控制时请自行封装。
  * @template T - 被缓存函数的类型
  * @param fn - 目标函数（应为纯函数，否则缓存可能返回过期结果）
  * @param resolver - 可选的自定义缓存键解析函数；省略时使用第一个参数作为键
  * @returns 带缓存能力的新函数
- * @remarks 缓存仅存在于返回函数的闭包中，不提供清理接口；需要失效控制时请自行封装。
  */
 export const memoize = <T extends (...args: any[]) => any>(
   fn: T,
@@ -183,11 +185,12 @@ export function compose(...fns: Array<(...args: any[]) => any>): (...args: any[]
 
 /**
  * 预置部分参数，返回等待剩余参数的新函数。
+ *
+ * 仅支持位置参数预置，不能跳过中间参数；`this` 不参与绑定。
  * @template T - 目标函数类型
  * @param fn - 目标函数
  * @param preset - 预先绑定的参数，按顺序置于参数列表前部
  * @returns 接收剩余参数的新函数
- * @remarks 仅支持位置参数预置，不能跳过中间参数；`this` 不参与绑定。
  */
 export const partial = <T extends (...args: any[]) => any>(
   fn: T,
@@ -203,6 +206,7 @@ const toError = (error: unknown): Error =>
 
 /**
  * 执行函数并捕获异常，统一返回 `[error, value]` 元组，避免调用方编写 try/catch。
+ * @template A - 参数类型元组
  * @template T - 成功时的结果类型
  * @param fn - 待执行的函数，可返回 Promise
  * @param args - 传给 `fn` 的参数
@@ -212,6 +216,14 @@ export function attempt<A extends any[], T>(
   fn: (...args: A) => Promise<T>,
   ...args: A
 ): Promise<AttemptResult<T>>
+/**
+ * 执行同步函数并捕获异常，返回 `[error, value]` 元组。
+ * @template A - 参数类型元组
+ * @template T - 成功时的结果类型
+ * @param fn - 待执行的同步函数
+ * @param args - 传给 `fn` 的参数
+ * @returns 成功为 `[undefined, 结果]`，失败为 `[Error, undefined]`
+ */
 export function attempt<A extends any[], T>(
   fn: (...args: A) => T,
   ...args: A
@@ -245,6 +257,13 @@ export function tryOrUndefined<T>(
   fn: () => Promise<T>,
   shouldGuard?: (error: unknown) => boolean,
 ): Promise<T | undefined>
+/**
+ * 执行同步函数并吞掉异常；失败时返回 `undefined`。
+ * @template T - 成功时的结果类型
+ * @param fn - 待执行的同步函数
+ * @param shouldGuard - 可选，返回 `false` 时重新抛出该异常
+ * @returns 函数结果或 `undefined`
+ */
 export function tryOrUndefined<T>(
   fn: () => T,
   shouldGuard?: (error: unknown) => boolean,

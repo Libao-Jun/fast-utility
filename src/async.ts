@@ -23,12 +23,13 @@ export const sleep = (ms: number): Promise<void> => {
 
 /**
  * 重试执行函数，直到成功或用尽尝试次数。
+ *
+ * `delay` 为函数时，参数是刚失败的尝试序号；等待期间不会阻塞事件循环。
  * @template T - 返回值类型
  * @param fn - 待执行的函数，接收当前尝试序号（从 `1` 开始）
  * @param options - 重试配置
  * @returns 首次成功的结果
  * @throws 最后一次失败时抛出原始错误（非 `Error` 异常不会被包装）
- * @remarks `delay` 为函数时，参数是刚失败的尝试序号；等待期间不会阻塞事件循环。
  */
 export const retry = async <T>(
   fn: (attempt: number) => T | Promise<T>,
@@ -54,13 +55,14 @@ export const retry = async <T>(
 
 /**
  * 并发执行异步映射，限制同时运行的任务数量。
+ *
+ * 任一任务失败会立即抛出该错误，其余已启动任务不会被取消。
  * @template T - 元素类型
  * @template R - 结果类型
  * @param items - 待处理数组
  * @param fn - 异步映射函数，接收元素与索引
  * @param limit - 最大并发数，默认不限制；小于 `1` 时按 `1` 处理
  * @returns 与输入顺序一致的结果数组
- * @remarks 任一任务失败会立即抛出该错误，其余已启动任务不会被取消。
  */
 export const parallelMap = async <T, R>(
   items: readonly T[],

@@ -113,11 +113,12 @@ export const invert = <T extends Record<string, string | number>>(
 
 /**
  * 深度合并普通对象，返回新对象（不修改任何入参）。
+ *
+ * 仅递归合并普通对象；数组会被浅拷贝覆盖，`Date` / `Map` / `Set` 等按引用保留。`__proto__`、`constructor`、`prototype` 键会被忽略。
  * @template T - 目标对象类型
  * @param target - 目标对象
  * @param sources - 一个或多个来源对象，后者覆盖前者
  * @returns 合并后的新对象
- * @remarks 仅递归合并普通对象；数组会被浅拷贝覆盖，`Date` / `Map` / `Set` 等按引用保留。`__proto__`、`constructor`、`prototype` 键会被忽略。
  */
 export const merge = <T extends Record<string, any>>(
   target: T,
@@ -219,12 +220,14 @@ const setIn = (
 
 /**
  * 按路径写入值，返回新对象（不修改入参，仅复制路径上的节点）。
+ *
+ * 路径中缺失的层级会自动创建：下一段为数字时创建数组，否则创建普通对象。包含 `__proto__`、`constructor`、`prototype` 的路径会抛出 `TypeError`。
  * @template T - 目标对象类型
  * @param obj - 目标对象
  * @param path - 路径，支持 `a.b.c`、`a[0].b` 或键数组
  * @param value - 待写入的值
  * @returns 写入后的新对象；空路径返回原对象
- * @remarks 路径中缺失的层级会自动创建：下一段为数字时创建数组，否则创建普通对象。包含 `__proto__`、`constructor`、`prototype` 的路径会抛出 `TypeError`。
+ * @throws {TypeError} 路径包含 `__proto__`、`constructor` 或 `prototype` 时抛出
  */
 export const set = <T extends object>(
   obj: T,
@@ -243,10 +246,11 @@ export const set = <T extends object>(
 
 /**
  * 把嵌套对象压平为「路径 → 叶子值」的单层对象。
+ *
+ * 数组下标以数字段表示（如 `list.0.name`）；空对象 / 空数组按叶子值保留。
  * @param obj - 待压平的对象或数组
  * @param separator - 路径分隔符，默认 `"."`
  * @returns 以路径字符串为键的新对象
- * @remarks 数组下标以数字段表示（如 `list.0.name`）；空对象 / 空数组按叶子值保留。
  */
 export const flattenObject = (
   obj: object,
@@ -284,10 +288,11 @@ export const flattenObject = (
 
 /**
  * 把「路径 → 值」的单层对象还原为嵌套结构（`flattenObject` 的逆操作）。
+ *
+ * 数字段会自动创建数组；包含 `__proto__`、`constructor`、`prototype` 的路径会被跳过。
  * @param obj - 以路径字符串为键的对象
  * @param separator - 路径分隔符，默认 `"."`
  * @returns 还原后的嵌套对象
- * @remarks 数字段会自动创建数组；包含 `__proto__`、`constructor`、`prototype` 的路径会被跳过。
  */
 export const unflattenObject = (
   obj: Record<string, unknown>,
@@ -315,13 +320,14 @@ export const unflattenObject = (
 
 /**
  * 同时映射对象的键与值，返回新对象。
+ *
+ * 仅遍历自有可枚举字符串键；新键冲突时后出现的覆盖先出现的。
  * @template T - 源对象类型
  * @template K - 新键类型
  * @template V - 新值类型
  * @param obj - 源对象
  * @param fn - 映射函数，接收原键与原值，返回 `[新键, 新值]`
  * @returns 映射后的新对象
- * @remarks 仅遍历自有可枚举字符串键；新键冲突时后出现的覆盖先出现的。
  */
 export const mapEntries = <T extends object, K extends PropertyKey, V>(
   obj: T,

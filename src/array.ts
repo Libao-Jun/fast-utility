@@ -509,12 +509,13 @@ export const replaceOrAppend = <T>(
 
 /**
  * 切换元素的出现状态：存在则移除，不存在则追加。
+ *
+ * 移除时会删除所有与目标相同的元素（SameValueZero 语义）。
  * @template T - 元素类型
  * @param arr - 源数组
  * @param item - 目标元素
  * @param force - 可选，`true` 强制保留、`false` 强制移除；省略时按当前状态取反
  * @returns 处理后的新数组（不会修改原数组）
- * @remarks 移除时会删除所有与目标相同的元素（SameValueZero 语义）。
  */
 export const toggle = <T>(arr: readonly T[], item: T, force?: boolean): T[] => {
   const exists = arr.includes(item)
@@ -535,10 +536,26 @@ export function zipToObject<K extends PropertyKey, V>(
   keys: readonly K[],
   values: (key: K, index: number) => V,
 ): Record<K, V>
+/**
+ * 由键数组与值数组构造对象。
+ * @template K - 键类型
+ * @template V - 值类型
+ * @param keys - 键数组
+ * @param values - 与键对应的值数组；长度不足时对应键为 `undefined`
+ * @returns 以 `keys` 为键的新对象
+ */
 export function zipToObject<K extends PropertyKey, V>(
   keys: readonly K[],
   values: readonly V[],
 ): Record<K, V | undefined>
+/**
+ * 由键数组与固定值构造对象。
+ * @template K - 键类型
+ * @template V - 值类型
+ * @param keys - 键数组
+ * @param values - 所有键共用的值
+ * @returns 以 `keys` 为键的新对象
+ */
 export function zipToObject<K extends PropertyKey, V>(
   keys: readonly K[],
   values: V,
@@ -586,6 +603,8 @@ export const hasIntersection = <T>(a: readonly T[], b: readonly T[]): boolean =>
 
 /**
  * 将数组投影为对象：分别指定键与值的取值方式。
+ *
+ * 键冲突时后出现的元素覆盖先出现的。
  * @template T - 元素类型
  * @template K - 键类型
  * @template V - 值类型，默认与元素类型一致
@@ -593,7 +612,6 @@ export const hasIntersection = <T>(a: readonly T[], b: readonly T[]): boolean =>
  * @param getKey - 键取值函数
  * @param getValue - 值取值函数，省略时直接使用元素本身
  * @returns 以 `getKey` 结果为键的新对象
- * @remarks 键冲突时后出现的元素覆盖先出现的。
  */
 export const toObjectBy = <T, K extends PropertyKey, V = T>(
   arr: readonly T[],

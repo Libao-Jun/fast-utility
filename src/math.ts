@@ -126,10 +126,11 @@ export const lerp = (start: number, end: number, t: number): number => start + (
 
 /**
  * 转换为整数。
+ *
+ * 语义等价于 `Number.parseInt`，但把 `NaN` 统一为 `0`，调用方无需重复判空。
  * @param value - 待转换的值
  * @param radix - 进制，默认 `10`（取值 2–36）
  * @returns 解析出的整数；无法解析时返回 `0`
- * @remarks 语义等价于 `Number.parseInt`，但把 `NaN` 统一为 `0`，调用方无需重复判空。
  */
 export const toInteger = (value: unknown, radix: number = 10): number => {
   const result = Number.parseInt(String(value), radix)
@@ -138,9 +139,10 @@ export const toInteger = (value: unknown, radix: number = 10): number => {
 
 /**
  * 转换为浮点数。
+ *
+ * 语义等价于 `Number.parseFloat`，但把 `NaN` 统一为 `0`。
  * @param value - 待转换的值
  * @returns 解析出的浮点数；无法解析时返回 `0`
- * @remarks 语义等价于 `Number.parseFloat`，但把 `NaN` 统一为 `0`。
  */
 export const toFloat = (value: unknown): number => {
   const result = Number.parseFloat(String(value))

@@ -11,8 +11,9 @@
 export const debounce = <T extends (...args: any[]) => any>(
   fn: T,
   delay = 300,
-  { leading = false, trailing = true }: { leading?: boolean; trailing?: boolean } = {},
+  options: { leading?: boolean; trailing?: boolean } = {},
 ): ((...args: Parameters<T>) => void) & { cancel: () => void } => {
+  const { leading = false, trailing = true } = options
   let timer: ReturnType<typeof setTimeout> | null = null
   let lastArgs: Parameters<T> | null = null
   let shouldTrail = trailing
@@ -54,8 +55,9 @@ export const debounce = <T extends (...args: any[]) => any>(
 export const throttle = <T extends (...args: any[]) => any>(
   fn: T,
   interval = 300,
-  { leading = true, trailing = true }: { leading?: boolean; trailing?: boolean } = {},
+  options: { leading?: boolean; trailing?: boolean } = {},
 ): ((...args: Parameters<T>) => void) & { cancel: () => void } => {
+  const { leading = true, trailing = true } = options
   let timer: ReturnType<typeof setTimeout> | null = null
   let lastTime = 0
   let pendingArgs: Parameters<T> | null = null

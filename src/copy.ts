@@ -1,10 +1,11 @@
 /**
  * 递归深拷贝：支持 `Date` / `RegExp` / `Map` / `Set` 以及循环引用。
+ *
+ * 函数、DOM 节点等无法被结构化拷贝的内容会按引用/浅层方式保留。
  * @template T - 被拷贝值的类型
  * @param obj - 待深拷贝的源对象/值
  * @param hash - 内部使用的缓存表（`WeakMap`），用于正确处理循环引用；一般无需传入
  * @returns 与源结构完全一致的全新拷贝
- * @remarks 函数、DOM 节点等无法被结构化拷贝的内容会按引用/浅层方式保留。
  */
 export function deepClone<T>(obj: T, hash = new WeakMap<any, any>()): T {
   if (obj === null || typeof obj !== "object") return obj
@@ -42,20 +43,24 @@ export function deepClone<T>(obj: T, hash = new WeakMap<any, any>()): T {
 
 /**
  * 基于 `JSON.parse(JSON.stringify(...))` 的深拷贝。
+ *
+ * 会丢失 `Date` / `Map` / `Set` / `function` / `undefined` 等类型（如 `Date` 会变成字符串）。
  * @template T - 被拷贝值的类型
  * @param obj - 待拷贝的值（仅支持 JSON 安全类型：`Object` / `Array` / `string` / `number` / `boolean` / `null`）
  * @returns 深拷贝结果
- * @remarks 会丢失 `Date` / `Map` / `Set` / `function` / `undefined` 等类型（如 `Date` 会变成字符串）。
+ * @throws {TypeError} 值包含循环引用或 `BigInt` 时抛出
  */
 export const cloneWithJSON = <T>(obj: T): T => JSON.parse(JSON.stringify(obj))
 
 /**
  * 基于原生 `structuredClone` 的深拷贝。
+ *
+ * 环境需支持 `structuredClone`（现代浏览器 / Node 17+）。
  * @template T - 被拷贝值的类型
  * @param obj - 待拷贝的值（不支持函数、`Symbol`、`DOM` 节点等）
  * @param options - 可选的 `StructuredSerializeOptions`（如 `{ transfer: [...] }`）
  * @returns 深拷贝结果
- * @remarks 环境需支持 `structuredClone`（现代浏览器 / Node 17+）。
+ * @throws {DOMException} 值包含无法结构化克隆的内容（如函数、DOM 节点）时抛出
  */
 export const cloneStructured = <T>(obj: T, options?: StructuredSerializeOptions): T => structuredClone(obj, options)
 

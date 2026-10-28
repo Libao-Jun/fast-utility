@@ -7,9 +7,10 @@ export const isArray = Array.isArray as (value: any) => value is any[]
 
 /**
  * 判断是否为普通对象（原型为 `Object.prototype` 或 `null`）。
+ *
+ * 数组、`Date`、`Map`、`Set`、类实例等均返回 `false`。
  * @param value - 任意值
  * @returns 是普通对象返回 `true`
- * @remarks 数组、`Date`、`Map`、`Set`、类实例等均返回 `false`。
  */
 export const isObject = (value: any): boolean => {
   if (value === null || typeof value !== "object") return false;
@@ -157,9 +158,10 @@ export const isIOSDevice = (): boolean =>
 
 /**
  * 判断是否为合法的邮箱地址（宽松校验：允许 `+`、点号等常见字符，仅要求含 `@` 与带点的域名）。
+ *
+ * 与 `isEmail` 的差异：本函数只做粗筛，`user+tag@example.com` 可通过；需要限制本地部分字符集时改用 `isEmail`。
  * @param email - 待校验的邮箱字符串
  * @returns 合法返回 `true`
- * @remarks 与 `isEmail` 的差异：本函数只做粗筛，`user+tag@example.com` 可通过；需要限制本地部分字符集时改用 `isEmail`。
  * @see isEmail
  */
 export const isEmailLoose = (email: string): boolean => {
@@ -206,9 +208,10 @@ export const isPrimitive = (value: any): boolean => {
 
 /**
  * 判断值是否为“空”：`null` / `undefined` / 空字符串 / 空数组 / 空对象 / 空 `Map` / 空 `Set` / 无效日期，以及长度为 0 的可枚举对象。
+ *
+ * 与 `isEmptySimple` 的差异：本函数对数字、函数、`Symbol` 一律返回 `false`，并按有效性判断 `Date`；`isEmptySimple` 不特判 `Date`（任何 `Date` 都视为空），但能正确处理 `DataView` 等没有 `length` 的 `ArrayBuffer` 视图。
  * @param value - 任意值
  * @returns 视为空返回 `true`
- * @remarks 与 `isEmptySimple` 的差异：本函数对数字、函数、`Symbol` 一律返回 `false`，并按有效性判断 `Date`；`isEmptySimple` 不特判 `Date`（任何 `Date` 都视为空），但能正确处理 `DataView` 等没有 `length` 的 `ArrayBuffer` 视图。
  * @see isEmptySimple
  */
 export const isEmpty = (value: any): boolean => {
@@ -226,9 +229,10 @@ export const isEmpty = (value: any): boolean => {
 
 /**
  * 判断值是否为“空”（简化版，仅覆盖字符串 / 数组 / `Map` / `Set` / `ArrayBuffer` 视图 / 普通对象）。
+ *
+ * 与 `isEmpty` 的差异：不特判 `Date`（任何 `Date` 都没有可枚举自有属性，会被判为空），但支持 `DataView` 等 `ArrayBuffer` 视图。
  * @param value - 字符串、对象、`null` 或 `undefined`
  * @returns 视为空返回 `true`
- * @remarks 与 `isEmpty` 的差异：不特判 `Date`（任何 `Date` 都没有可枚举自有属性，会被判为空），但支持 `DataView` 等 `ArrayBuffer` 视图。
  * @see isEmpty
  */
 export function isEmptySimple(value: string | object | null | undefined): boolean {
@@ -240,14 +244,7 @@ export function isEmptySimple(value: string | object | null | undefined): boolea
   return false;
 }
 
-/**
- * 深度相等比较：支持 `Date` / `RegExp` / `Map` / `Set` / `ArrayBuffer` 视图、嵌套对象与循环引用。
- * @template T - 比较值的类型
- * @param x - 第一个值
- * @param y - 第二个值
- * @returns 完全相等返回 `true`
- * @remarks `Map` 的键与 `Set` 的元素按引用（SameValueZero）比较，不递归比较其内部对象。
- */
+/** 内部实现：递归比较，`seen` 用于处理循环引用。 */
 const _isEqual = (x: any, y: any, seen: WeakMap<object, object>): boolean => {
   if (Object.is(x, y)) return true;
   if (x instanceof Date && y instanceof Date) return x.getTime() === y.getTime();
@@ -296,6 +293,15 @@ const _isEqual = (x: any, y: any, seen: WeakMap<object, object>): boolean => {
   return true;
 };
 
+/**
+ * 深度相等比较：支持 `Date` / `RegExp` / `Map` / `Set` / `ArrayBuffer` 视图、嵌套对象与循环引用。
+ *
+ * `Map` 的键与 `Set` 的元素按引用（SameValueZero）比较，不递归比较其内部对象。
+ * @template T - 比较值的类型
+ * @param x - 第一个值
+ * @param y - 第二个值
+ * @returns 完全相等返回 `true`
+ */
 export const isEqual = <T>(x: T, y: T): boolean => _isEqual(x, y, new WeakMap());
 
 /**

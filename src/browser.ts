@@ -1,8 +1,9 @@
 /**
  * 内部工具：把传入的 URL 解析为 `URL` 对象；相对路径在浏览器中基于当前页面地址解析。
+ *
+ * Node 等无 `window` 的环境只接受绝对 URL，相对路径会抛出 `TypeError`。
  * @param url - 可选的目标 URL；省略时使用当前页面地址
  * @returns 解析后的 `URL` 对象
- * @remarks Node 等无 `window` 的环境只接受绝对 URL，相对路径会抛出 `TypeError`。
  */
 const resolveUrl = (url?: string): URL => {
   const base = typeof window !== "undefined" ? window.location.href : undefined;
@@ -72,7 +73,6 @@ export const copyToClipboard = async (text: string): Promise<boolean> => {
  * @param content - 文件内容（字符串或任意 Blob 数据片段）
  * @param filename - 下载时保存的文件名
  * @param mimeType - 文件的 MIME 类型，默认 `"text/plain"`
- * @returns 无返回值（会直接触发下载）
  */
 export const downloadFile = (
   content: string | BlobPart,
@@ -92,7 +92,6 @@ export const downloadFile = (
  * 将任意数据以 JSON 文件形式导出下载。
  * @param data - 待导出的数据（会被 `JSON.stringify` 序列化）
  * @param filename - 文件名，默认 `"data.json"`
- * @returns 无返回值（会直接触发下载）
  */
 export const exportJSON = (data: any, filename = "data.json"): void => {
   downloadFile(JSON.stringify(data, null, 2), filename, "application/json");
@@ -101,7 +100,6 @@ export const exportJSON = (data: any, filename = "data.json"): void => {
 /**
  * 滚动页面到顶部。
  * @param behavior - 滚动行为，默认 `"smooth"`（平滑滚动），可选 `"auto"`（瞬时）
- * @returns 无返回值
  */
 export const scrollToTop = (behavior: ScrollBehavior = "smooth"): void => {
   window.scrollTo({ top: 0, behavior });
@@ -110,7 +108,6 @@ export const scrollToTop = (behavior: ScrollBehavior = "smooth"): void => {
 /**
  * 滚动页面到底部。
  * @param behavior - 滚动行为，默认 `"smooth"`（平滑滚动），可选 `"auto"`（瞬时）
- * @returns 无返回值
  */
 export const scrollToBottom = (behavior: ScrollBehavior = "smooth"): void => {
   window.scrollTo({ top: document.documentElement.scrollHeight, behavior });

@@ -10,9 +10,10 @@ export const isChineseIDCard = (value: string): boolean => {
 
 /**
  * 校验是否为合法的邮箱地址（严格版：本地部分仅允许字母、数字、下划线与短横线，不支持 `+` 和点号；域名须含至少一个点）。
+ *
+ * 需要兼容 `user+tag@example.com`、`user.name@example.com` 等常见格式时，改用 `isEmailLoose`。
  * @param value - 待校验的邮箱字符串
  * @returns 合法返回 `true`
- * @remarks 需要兼容 `user+tag@example.com`、`user.name@example.com` 等常见格式时，改用 `isEmailLoose`。
  * @see isEmailLoose
  */
 export const isEmail = (value: string): boolean => {
@@ -30,9 +31,10 @@ export const isMobilePhone = (value: string | number): boolean => {
 
 /**
  * 校验是否为合法的 HTTP / HTTPS URL。
+ *
+ * 仅接受 `http://` 与 `https://` 协议；`mailto:`、`ftp:`、相对路径等一律返回 `false`。
  * @param value - 待校验的字符串
  * @returns 合法返回 `true`
- * @remarks 仅接受 `http://` 与 `https://` 协议；`mailto:`、`ftp:`、相对路径等一律返回 `false`。
  */
 export const isURL = (value: string): boolean => {
   if (typeof value !== "string" || !/^https?:\/\//i.test(value)) return false

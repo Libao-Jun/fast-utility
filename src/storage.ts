@@ -18,7 +18,6 @@ export const getLocalStorage = <T = any>(key: string): T | null => {
  * 写入 `localStorage`（自动 `JSON.stringify` 序列化；基本类型也推荐以对象/数组存储）。
  * @param key - 存储键名
  * @param value - 任意可序列化的值
- * @returns 无返回值
  */
 export const setLocalStorage = (key: string, value: unknown): void => {
   localStorage.setItem(key, JSON.stringify(value));
@@ -27,7 +26,6 @@ export const setLocalStorage = (key: string, value: unknown): void => {
 /**
  * 移除 `localStorage` 中指定键。
  * @param key - 要移除的键名
- * @returns 无返回值
  */
 export const removeLocalStorage = (key: string): void => {
   localStorage.removeItem(key);
@@ -35,7 +33,6 @@ export const removeLocalStorage = (key: string): void => {
 
 /**
  * 清空当前域下的全部 `localStorage`。
- * @returns 无返回值
  */
 export const clearLocalStorage = (): void => {
   localStorage.clear();
