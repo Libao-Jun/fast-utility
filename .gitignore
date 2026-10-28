@@ -1,0 +1,33 @@
+# 依赖
+node_modules/
+
+# 构建产物
+dist/
+
+# 测试覆盖率
+coverage/
+
+# TypeScript 构建缓存
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 日志
+*.log
+
+# Claude 工作目录
+.claude/settings.local.json
+.agents/
+.codebuddy
+
+# 锁文件（npm 包不提交锁文件）
+pnpm-lock.yaml
+
+# 忽略 npmrc
+.npmrc

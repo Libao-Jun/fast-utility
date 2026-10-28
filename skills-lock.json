@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "code-simplifier": {
+      "source": "simonwong/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/code-simplifier/SKILL.md",
+      "computedHash": "9605c6c799f9e8074169fd04d32d9b333f562a4bb546d35b4464dbb3068c7c12"
+    }
+  }
+}
