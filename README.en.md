@@ -6,6 +6,8 @@ English | [简体中文](./README.md)
 
 fast-utility gathers the helpers you keep rewriting into one place: type checks, date & time, number and currency formatting, string manipulation, array and object operations, deep cloning, storage and cookies, browser helpers, debounce/throttle, async control, math and validators — 178 functions in total. Every function is imported by name from the package root, so you only ship what you use.
 
+## ✨ Features
+
 - **Zero runtime dependencies**: the install size is just this library.
 - **Tree-shaking friendly**: each function is exported independently; unused ones never reach your bundle.
 - **Complete types**: ships `.d.ts`. The `is*` family are type guards that narrow types inside `if`.
